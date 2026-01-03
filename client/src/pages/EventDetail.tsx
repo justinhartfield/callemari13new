@@ -1,17 +1,42 @@
 /**
  * DESIGN: Neo-Brutalist "Zine Bodega"
  * Event Detail page - Full event information with photos and menu
+ * Photo gallery with lightbox from marti13.es
  */
 
+import { useState } from "react";
 import { useParams, Link } from "wouter";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { events } from "@/data/events";
-import { ArrowLeft, Calendar, ChefHat } from "lucide-react";
+import { ArrowLeft, Calendar, ChefHat, X, ChevronLeft, ChevronRight, Images } from "lucide-react";
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const event = events.find((e) => e.id === id);
+  
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Get all images including main image and gallery
+  const allImages = event ? [event.image, ...(event.gallery || [])] : [];
+  
+  const openLightbox = (index: number) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+  
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+  };
+  
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+  
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
 
   if (!event) {
     return (
@@ -74,13 +99,26 @@ export default function EventDetail() {
         </div>
 
         {/* Main Image */}
-        <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+        <div 
+          className="relative h-[50vh] md:h-[60vh] overflow-hidden cursor-pointer"
+          onClick={() => openLightbox(0)}
+        >
           <img
             src={event.image}
             alt={event.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
+          
+          {/* Photo count badge */}
+          {allImages.length > 1 && (
+            <div className="absolute top-4 left-4 md:top-8 md:left-auto md:right-32 z-10">
+              <div className="bg-orange text-cream px-4 py-2 font-bold border-4 border-ink shadow-brutal flex items-center gap-2">
+                <Images size={18} />
+                {allImages.length} fotos
+              </div>
+            </div>
+          )}
           
           {/* Date Badge */}
           <div className="absolute top-4 right-4 md:top-8 md:right-8">
@@ -120,27 +158,50 @@ export default function EventDetail() {
 
               {/* Photo Gallery */}
               <div className="brutal-card p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-ink mb-6">Fotos del Evento</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Main photo */}
-                  <div className="md:col-span-2 relative group">
-                    <div className="border-4 border-ink overflow-hidden">
-                      <img
-                        src={event.image}
-                        alt={event.title}
-                        className="w-full h-64 md:h-96 object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-yellow text-ink px-3 py-1 text-xs font-bold uppercase border-2 border-ink">
-                        Foto Principal
-                      </span>
+                <div className="flex items-center gap-3 mb-6">
+                  <Images size={24} className="text-orange" />
+                  <h2 className="text-2xl font-bold text-ink">Fotos del Evento</h2>
+                </div>
+                
+                {event.gallery && event.gallery.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {event.gallery.map((photo, index) => (
+                      <div 
+                        key={index}
+                        className="aspect-square overflow-hidden border-4 border-ink shadow-brutal cursor-pointer hover:shadow-brutal-lg transition-all duration-100 hover:-translate-y-1 group"
+                        onClick={() => openLightbox(index + 1)}
+                      >
+                        <img 
+                          src={photo} 
+                          alt={`${event.title} - Foto ${index + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Main photo */}
+                    <div className="md:col-span-2 relative group">
+                      <div 
+                        className="border-4 border-ink overflow-hidden cursor-pointer"
+                        onClick={() => openLightbox(0)}
+                      >
+                        <img
+                          src={event.image}
+                          alt={event.title}
+                          className="w-full h-64 md:h-96 object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="absolute top-3 left-3">
+                        <span className="bg-yellow text-ink px-3 py-1 text-xs font-bold uppercase border-2 border-ink">
+                          Foto Principal
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <p className="text-ink/60 text-sm mt-4 italic">
-                  * Las fotos adicionales del evento se añadirán próximamente
-                </p>
+                )}
               </div>
             </div>
 
@@ -183,9 +244,11 @@ export default function EventDetail() {
                       </div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-ink">∞</div>
+                      <div className="text-2xl font-bold text-ink">
+                        {allImages.length}
+                      </div>
                       <div className="text-xs text-ink/70 uppercase tracking-wide">
-                        Risas
+                        Fotos
                       </div>
                     </div>
                   </div>
@@ -228,6 +291,57 @@ export default function EventDetail() {
       </section>
 
       <Footer />
+      
+      {/* Lightbox Modal */}
+      {lightboxOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-ink/95 flex items-center justify-center p-4"
+          onClick={closeLightbox}
+        >
+          {/* Close button */}
+          <button 
+            className="absolute top-4 right-4 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-yellow transition-colors z-10"
+            onClick={closeLightbox}
+          >
+            <X size={24} />
+          </button>
+          
+          {/* Navigation buttons */}
+          {allImages.length > 1 && (
+            <>
+              <button 
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-yellow transition-colors z-10"
+                onClick={(e) => { e.stopPropagation(); prevImage(); }}
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button 
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-yellow transition-colors z-10"
+                onClick={(e) => { e.stopPropagation(); nextImage(); }}
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
+          )}
+          
+          {/* Image */}
+          <div 
+            className="max-w-[90vw] max-h-[85vh] relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={allImages[currentImageIndex]} 
+              alt={`${event.title} - Foto ${currentImageIndex + 1}`}
+              className="max-w-full max-h-[80vh] object-contain border-4 border-cream shadow-[8px_8px_0_0_#fdf6e3]"
+            />
+            
+            {/* Image counter */}
+            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-cream text-ink px-4 py-2 font-bold border-4 border-ink">
+              {currentImageIndex + 1} / {allImages.length}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

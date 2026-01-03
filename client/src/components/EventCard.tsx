@@ -6,7 +6,17 @@
  */
 
 import { Link } from "wouter";
-import { Event, formatEventDate } from "@/data/events";
+import { Event } from "@/data/events";
+
+// Format date for display
+const formatEventDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).toUpperCase();
+};
 
 interface EventCardProps {
   event: Event;
