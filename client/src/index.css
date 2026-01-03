@@ -3,11 +3,28 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * DESIGN SYSTEM: Neo-Brutalist "Zine Bodega"
+ * 
+ * Colors:
+ * - Cream (#fdf6e3) - Background, aged paper warmth
+ * - Ink Black (#1a1a1a) - Bold statements, definition
+ * - Valencia Orange (#ff6b35) - Energy, appetite, Mediterranean
+ * - Sticker Yellow (#f7eb00) - Highlights, urgency
+ * 
+ * Typography: Bitter (Serif) - Editorial, established, warm
+ * Shadows: Hard 8px offset, no blur, expands to 12px on hover
+ * Borders: 4px thick, defines all containers
+ * Animations: Fast 0.1-0.2s, no easing curves
+ */
+
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: 'Bitter', Georgia, serif;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius: 0;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -40,77 +57,49 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Custom Neo-Brutalist colors */
+  --color-cream: #fdf6e3;
+  --color-ink: #1a1a1a;
+  --color-orange: #ff6b35;
+  --color-yellow: #f7eb00;
+  --color-orange-dark: #e55a25;
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
-}
-
-.dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  --primary: #ff6b35;
+  --primary-foreground: #fdf6e3;
+  --sidebar-primary: #ff6b35;
+  --sidebar-primary-foreground: #fdf6e3;
+  --chart-1: #ff6b35;
+  --chart-2: #f7eb00;
+  --chart-3: #1a1a1a;
+  --chart-4: #e55a25;
+  --chart-5: #fdf6e3;
+  --radius: 0;
+  --background: #fdf6e3;
+  --foreground: #1a1a1a;
+  --card: #fdf6e3;
+  --card-foreground: #1a1a1a;
+  --popover: #fdf6e3;
+  --popover-foreground: #1a1a1a;
+  --secondary: #f7eb00;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f5edd6;
+  --muted-foreground: #4a4a4a;
+  --accent: #ff6b35;
+  --accent-foreground: #fdf6e3;
+  --destructive: #dc2626;
+  --destructive-foreground: #fdf6e3;
+  --border: #1a1a1a;
+  --input: #1a1a1a;
+  --ring: #ff6b35;
+  --sidebar: #fdf6e3;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-accent: #ff6b35;
+  --sidebar-accent-foreground: #fdf6e3;
+  --sidebar-border: #1a1a1a;
+  --sidebar-ring: #ff6b35;
 }
 
 @layer base {
@@ -119,6 +108,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Bitter', Georgia, serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -131,27 +121,19 @@
   input[type="radio"]:not(:disabled) {
     @apply cursor-pointer;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bitter', Georgia, serif;
+    font-weight: 700;
+  }
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
 
@@ -162,16 +144,151 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 2rem;
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1280px;
     }
   }
+  
+  /* Neo-Brutalist Card with Hard Shadow */
+  .brutal-card {
+    @apply bg-cream border-4 border-ink;
+    box-shadow: 8px 8px 0 0 #1a1a1a;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  
+  .brutal-card:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0 0 #1a1a1a;
+  }
+  
+  /* Orange shadow variant */
+  .brutal-card-orange {
+    @apply bg-cream border-4 border-ink;
+    box-shadow: 8px 8px 0 0 #ff6b35;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  
+  .brutal-card-orange:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0 0 #ff6b35;
+  }
+  
+  /* Sticker Badge - Rotated */
+  .sticker-badge {
+    @apply inline-block px-3 py-1 bg-yellow text-ink font-bold text-sm uppercase border-2 border-ink;
+    transform: rotate(-3deg);
+    box-shadow: 3px 3px 0 0 #1a1a1a;
+  }
+  
+  .sticker-badge-orange {
+    @apply inline-block px-3 py-1 bg-orange text-cream font-bold text-sm uppercase border-2 border-ink;
+    transform: rotate(-3deg);
+    box-shadow: 3px 3px 0 0 #1a1a1a;
+  }
+  
+  /* Brutal Button */
+  .brutal-btn {
+    @apply px-6 py-3 bg-ink text-cream font-bold uppercase tracking-wide border-4 border-ink;
+    box-shadow: 4px 4px 0 0 #ff6b35;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  
+  .brutal-btn:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 #ff6b35;
+  }
+  
+  .brutal-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 #ff6b35;
+  }
+  
+  .brutal-btn-orange {
+    @apply px-6 py-3 bg-orange text-cream font-bold uppercase tracking-wide border-4 border-ink;
+    box-shadow: 4px 4px 0 0 #1a1a1a;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  
+  .brutal-btn-orange:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 #1a1a1a;
+  }
+  
+  /* Glass Navigation */
+  .glass-nav {
+    @apply backdrop-blur-md border-b-4 border-ink;
+    background: rgba(253, 246, 227, 0.9);
+  }
+  
+  /* Market Ticker */
+  .market-ticker {
+    @apply bg-ink text-cream py-2 overflow-hidden;
+  }
+  
+  .ticker-content {
+    @apply flex gap-8 whitespace-nowrap;
+    animation: marquee 30s linear infinite;
+  }
+  
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  
+  
+  
+  /* Section Divider */
+  .brutal-divider {
+    @apply w-full h-1 bg-ink my-8;
+  }
+  
+  /* Photo Card with tape effect */
+  .photo-card {
+    @apply relative bg-cream p-2 border-4 border-ink;
+    box-shadow: 8px 8px 0 0 #1a1a1a;
+    transform: rotate(-1deg);
+  }
+  
+  .photo-card::before {
+    content: '';
+    @apply absolute -top-3 left-1/2 w-12 h-6 bg-yellow/80 border-2 border-ink;
+    transform: translateX(-50%) rotate(2deg);
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .bg-cream { background-color: #fdf6e3; }
+  .bg-ink { background-color: #1a1a1a; }
+  .bg-orange { background-color: #ff6b35; }
+  .bg-yellow { background-color: #f7eb00; }
+  
+  .text-cream { color: #fdf6e3; }
+  .text-ink { color: #1a1a1a; }
+  .text-orange { color: #ff6b35; }
+  .text-yellow { color: #f7eb00; }
+  
+  .border-cream { border-color: #fdf6e3; }
+  .border-ink { border-color: #1a1a1a; }
+  .border-orange { border-color: #ff6b35; }
+  .border-yellow { border-color: #f7eb00; }
+  
+  .rotate-sticker { transform: rotate(-3deg); }
+  .rotate-sticker-alt { transform: rotate(2deg); }
+  
+  .shadow-brutal { box-shadow: 8px 8px 0 0 #1a1a1a; }
+  .shadow-brutal-orange { box-shadow: 8px 8px 0 0 #ff6b35; }
+  .shadow-brutal-lg { box-shadow: 12px 12px 0 0 #1a1a1a; }
 }
