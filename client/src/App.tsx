@@ -11,6 +11,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Menu from "./pages/Menu";
 import HallOfFame from "./pages/HallOfFame";
 import About from "./pages/About";
@@ -20,6 +21,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/eventos" component={Events} />
+      <Route path="/evento/:id" component={EventDetail} />
       <Route path="/menu" component={Menu} />
       <Route path="/hall-of-fame" component={HallOfFame} />
       <Route path="/nosotros" component={About} />
