@@ -1,6 +1,7 @@
 /**
  * DESIGN: Neo-Brutalist "Zine Bodega"
  * Complete event data from Martí 13 WordPress export
+ * Events sorted chronologically (most recent first)
  * Total events: 76
  */
 
@@ -24,18 +25,10 @@ export interface HallOfFameItem {
 }
 
 // Complete events from marti13.es WordPress export
+// Sorted chronologically: most recent first, inaugural event last
 export const events: Event[] = [
   {
     id: "1",
-    title: "10/17 Tortilla de Óscar ",
-    date: "2025-10-17",
-    image: "http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-21-at-08.20.32-2.jpeg",
-    description: "10/17 Tortilla de Óscar ",
-    menuItems: [],
-    gallery: ["http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-21-at-08.20.32-1-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-21-at-08.20.32-768x1024.jpeg"]
-  },
-  {
-    id: "2",
     title: "19/12 Lo final del año !",
     date: "2025-12-19",
     image: "http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-19-at-12.14.13.jpeg",
@@ -44,7 +37,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-19-at-12.14.03-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-19-at-12.14.07-768x1024.jpeg"]
   },
   {
-    id: "3",
+    id: "2",
     title: "12/12 Feliz Navidad antes de Amsterdam",
     date: "2025-12-12",
     image: "http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-12-at-16.21.15-2.jpeg",
@@ -53,7 +46,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-12-at-16.21.15-1-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-12-at-16.21.15-1024x768.jpeg"]
   },
   {
-    id: "4",
+    id: "3",
     title: "5/12 Marko Visitamos ",
     date: "2025-12-05",
     image: "http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-06-at-06.52.28.jpeg",
@@ -62,7 +55,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-06-at-06.52.27-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-06-at-06.52.26-768x1024.jpeg"]
   },
   {
-    id: "5",
+    id: "4",
     title: "21/11 Mezclar la carne de caballo con la de vaca",
     date: "2025-11-21",
     image: "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-22-at-06.17.22.jpeg",
@@ -71,7 +64,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-22-at-06.17.20-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-22-at-06.17.23-768x1024.jpeg"]
   },
   {
-    id: "6",
+    id: "5",
     title: "14/11 Óscar será un bombero y MAC regalita ",
     date: "2025-11-14",
     image: "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-14-at-15.42.46-1.jpeg",
@@ -80,7 +73,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-14-at-15.42.46-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-14-at-15.42.47-768x1024.jpeg"]
   },
   {
-    id: "7",
+    id: "6",
     title: "7/11 Tortilla de Óscar y Conejo de Justino (pero nadie comían) ",
     date: "2025-11-07",
     image: "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-08-at-06.14.14.jpeg",
@@ -89,7 +82,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-08-at-06.14.15-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-11-08-at-06.14.15-1-768x1024.jpeg"]
   },
   {
-    id: "8",
+    id: "7",
     title: "31/10 Halloweed @ Martí 13",
     date: "2025-10-31",
     image: "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-10-31-at-12.50.05.jpeg",
@@ -98,13 +91,22 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-10-31-at-12.50.00-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/11/WhatsApp-Image-2025-10-31-at-12.50.02-1024x768.jpeg"]
   },
   {
-    id: "9",
+    id: "8",
     title: "24/10/25 Vuelve al Potro",
     date: "2025-10-24",
     image: "http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-24-at-13.59.27.jpeg",
     description: "24/10/25 Vuelve al Potro",
     menuItems: [],
     gallery: ["http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-24-at-13.59.28-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-21-at-08.20.32-1-768x1024.jpeg"]
+  },
+  {
+    id: "9",
+    title: "10/17 Tortilla de Óscar ",
+    date: "2025-10-17",
+    image: "http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-21-at-08.20.32-2.jpeg",
+    description: "10/17 Tortilla de Óscar ",
+    menuItems: [],
+    gallery: ["http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-21-at-08.20.32-1-768x1024.jpeg", "http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-21-at-08.20.32-768x1024.jpeg"]
   },
   {
     id: "10",
@@ -506,7 +508,7 @@ export const events: Event[] = [
     id: "54",
     title: "14/6 Mery Jane Berlin ",
     date: "2024-06-14",
-    image: "None",
+    image: "",
     description: "RABBI TYLER: SALMÓN MARINADO, COGOLLO DE LECHUGA, SALSA TÁRTARA Y PIPARRAS",
     menuItems: ["RABBI TYLER: SALMÓN MARINADO, COGOLLO DE LECHUGA, SALSA TÁRTARA Y PIPARRAS"],
     gallery: ["http://marti13.es/wp-content/uploads/2024/06/WhatsApp-Image-2024-06-14-at-21.13.45-576x1024.jpeg"]
@@ -576,15 +578,6 @@ export const events: Event[] = [
   },
   {
     id: "62",
-    title: "31/4 llega el verano",
-    date: "2024-04-31",
-    image: "http://marti13.es/wp-content/uploads/2024/06/PXL_20240531_102828148-scaled.jpg",
-    description: "31/4 llega el verano",
-    menuItems: [],
-    gallery: ["http://marti13.es/wp-content/uploads/2024/06/IMG-20240531-WA0017-1024x768.jpg"]
-  },
-  {
-    id: "63",
     title: "26/4 COWAN DISPARO DE TEXAS",
     date: "2024-04-26",
     image: "http://marti13.es/wp-content/uploads/2024/05/PXL_20240426_101040837-scaled.jpg",
@@ -593,7 +586,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/05/PXL_20240426_101045910-300x226.jpg", "http://marti13.es/wp-content/uploads/2024/05/PXL_20240426_091942833-300x226.jpg"]
   },
   {
-    id: "64",
+    id: "63",
     title: "19/4 LOS ARMAS SE LLEVAN ",
     date: "2024-04-19",
     image: "http://marti13.es/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-19-at-12.46.57.jpeg",
@@ -602,7 +595,7 @@ export const events: Event[] = [
     gallery: []
   },
   {
-    id: "65",
+    id: "64",
     title: "12/4 JUSTIN QUEDA COMO RODRIQUEZ ",
     date: "2024-04-12",
     image: "http://marti13.es/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-12-at-14.15.34.jpeg",
@@ -611,7 +604,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-12-at-14.15.30-225x300.jpeg"]
   },
   {
-    id: "66",
+    id: "65",
     title: "5/4 CARLOS (CONTABLE) PRIMERA ALMORZOAR!",
     date: "2024-04-05",
     image: "http://marti13.es/wp-content/uploads/2024/04/PXL_20240405_093205572-scaled.jpg",
@@ -620,7 +613,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-06-at-19.13.34-225x300.jpeg", "http://marti13.es/wp-content/uploads/2024/04/PXL_20240405_091541597-300x226.jpg"]
   },
   {
-    id: "67",
+    id: "66",
     title: "29/3 NIÑAS PRIMERA ALMORZAR A MARTÍ 13",
     date: "2024-03-29",
     image: "http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-29-at-17.04.58-1.jpeg",
@@ -629,7 +622,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-29-at-17.04.58-225x300.jpeg", "http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-29-at-17.04.59-300x225.jpeg"]
   },
   {
-    id: "68",
+    id: "67",
     title: "22/3 POST FALLAS ALMORZAR!",
     date: "2024-03-22",
     image: "http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-23-at-10.05.46.jpeg",
@@ -638,7 +631,7 @@ export const events: Event[] = [
     gallery: []
   },
   {
-    id: "69",
+    id: "68",
     title: "8/3 DIA DE LAS MUJERES",
     date: "2024-03-08",
     image: "http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-08-at-15.35.46.jpeg",
@@ -647,7 +640,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-08-at-15.36.02-300x225.jpeg", "http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-08-at-15.36.46-300x225.jpeg"]
   },
   {
-    id: "70",
+    id: "69",
     title: "1/3 Prohibido Peetardos ",
     date: "2024-03-01",
     image: "http://marti13.es/wp-content/uploads/2024/03/WhatsApp-Image-2024-03-01-at-19.06.11.jpeg",
@@ -656,7 +649,7 @@ export const events: Event[] = [
     gallery: []
   },
   {
-    id: "71",
+    id: "70",
     title: "22/2 Tyler hacen el sushidillo",
     date: "2024-02-22",
     image: "http://marti13.es/wp-content/uploads/2024/02/PXL_20240223_112431833-scaled.jpg",
@@ -665,7 +658,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/02/PXL_20240223_101054240-300x226.jpg", "http://marti13.es/wp-content/uploads/2024/02/IMG-20240223-WA0006-169x300.jpg"]
   },
   {
-    id: "72",
+    id: "71",
     title: "16/2 Cara con pneumonia | Florian encontro Tony Hawk 1",
     date: "2024-02-16",
     image: "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-16-at-12.02.32.jpeg",
@@ -674,7 +667,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-16-at-11.20.19-169x300.jpeg", "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-16-at-16.02.50-1-225x300.jpeg"]
   },
   {
-    id: "73",
+    id: "72",
     title: "9/2 fede's primero hole-en-uno",
     date: "2024-02-09",
     image: "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-09-at-15.28.07.jpeg",
@@ -683,7 +676,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-09-at-15.28.11-225x300.jpeg", "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-09-at-15.28.04-225x300.jpeg"]
   },
   {
-    id: "74",
+    id: "73",
     title: "2/2/2024 aniversario y pizcuetzario 14  ",
     date: "2024-02-02",
     image: "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-02-at-15.44.06-e1706890818860.jpeg",
@@ -692,7 +685,7 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-02-at-15.44.02-e1706890597929-291x300.jpeg", "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-02-at-15.43.58-e1706890739334-300x261.jpeg"]
   },
   {
-    id: "75",
+    id: "74",
     title: "26/1/2024 Molly arreglando su 'slice'",
     date: "2024-01-26",
     image: "http://marti13.es/wp-content/uploads/2024/01/WhatsApp-Image-2024-01-26-at-14.01.40.jpeg",
@@ -701,13 +694,22 @@ export const events: Event[] = [
     gallery: ["http://marti13.es/wp-content/uploads/2024/01/bocadillo-de-anchoas-de-la-escala-foto-principal-150x150.webp"]
   },
   {
-    id: "76",
+    id: "75",
     title: "19/1/2024 Inaugural Almorzar ",
     date: "2024-01-19",
     image: "http://marti13.es/wp-content/uploads/2024/01/WhatsApp-Image-2024-01-19-at-16.08.58.jpeg",
     description: "CHIVITO ESTILO CALIFORNIA. BOCADILLO CLÁSICO CON TOMATE, BONITO Y OLIVAS",
     menuItems: ["CHIVITO ESTILO CALIFORNIA", "BOCADILLO CLÁSICO CON TOMATE, BONITO Y OLIVAS"],
     gallery: ["https://marti13.es/wp-content/uploads/2017/03/145466_635x360.jpg"]
+  },
+  {
+    id: "76",
+    title: "31/4 llega el verano",
+    date: "2024-04-31",
+    image: "http://marti13.es/wp-content/uploads/2024/06/PXL_20240531_102828148-scaled.jpg",
+    description: "31/4 llega el verano",
+    menuItems: [],
+    gallery: ["http://marti13.es/wp-content/uploads/2024/06/IMG-20240531-WA0017-1024x768.jpg"]
   },
 ];
 
