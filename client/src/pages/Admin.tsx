@@ -1,0 +1,1319 @@
+/**
+ * Admin Panel for Martí 13
+ * Access code: 420
+ * 
+ * Features:
+ * - Event management (create, edit, delete)
+ * - Food item management (Hall of Fame)
+ * - Chef profile management
+ * - Site settings
+ */
+
+import { useState, useEffect } from "react";
+import { Link } from "wouter";
+import { 
+  Calendar, 
+  UtensilsCrossed, 
+  Users, 
+  Settings, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  ArrowLeft,
+  Lock,
+  Image,
+  Save,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Search
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+
+const ADMIN_CODE = "420";
+
+export default function Admin() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [code, setCode] = useState("");
+  const [activeTab, setActiveTab] = useState("events");
+
+  // Check if already authenticated (stored in sessionStorage)
+  useEffect(() => {
+    const storedAuth = sessionStorage.getItem("marti13_admin_auth");
+    if (storedAuth === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = () => {
+    if (code === ADMIN_CODE) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem("marti13_admin_auth", "true");
+      toast.success("¡Bienvenido al panel de administración!");
+    } else {
+      toast.error("Código incorrecto");
+      setCode("");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("marti13_admin_auth");
+    setCode("");
+  };
+
+  if (!isAuthenticated) {
+    return <LoginScreen code={code} setCode={setCode} onLogin={handleLogin} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-cream">
+      {/* Header */}
+      <header className="bg-ink text-cream border-b-4 border-orange">
+        <div className="container py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-2 text-cream/70 hover:text-cream transition-colors">
+                <ArrowLeft size={20} />
+                <span>Volver al sitio</span>
+              </Link>
+              <div className="h-6 w-px bg-cream/30" />
+              <h1 className="text-xl font-bold">Panel de Administración</h1>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="border-cream/30 text-cream hover:bg-cream/10"
+            >
+              Cerrar Sesión
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4 mb-8 bg-cream border-4 border-ink">
+            <TabsTrigger 
+              value="events" 
+              className="flex items-center gap-2 data-[state=active]:bg-orange data-[state=active]:text-cream"
+            >
+              <Calendar size={18} />
+              Eventos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="food" 
+              className="flex items-center gap-2 data-[state=active]:bg-orange data-[state=active]:text-cream"
+            >
+              <UtensilsCrossed size={18} />
+              Hall of Fame
+            </TabsTrigger>
+            <TabsTrigger 
+              value="chefs" 
+              className="flex items-center gap-2 data-[state=active]:bg-orange data-[state=active]:text-cream"
+            >
+              <Users size={18} />
+              Cocineros
+            </TabsTrigger>
+            <TabsTrigger 
+              value="settings" 
+              className="flex items-center gap-2 data-[state=active]:bg-orange data-[state=active]:text-cream"
+            >
+              <Settings size={18} />
+              Ajustes
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="events">
+            <EventsManager />
+          </TabsContent>
+
+          <TabsContent value="food">
+            <FoodItemsManager />
+          </TabsContent>
+
+          <TabsContent value="chefs">
+            <ChefsManager />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SettingsManager />
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+}
+
+// Login Screen Component
+function LoginScreen({ 
+  code, 
+  setCode, 
+  onLogin 
+}: { 
+  code: string; 
+  setCode: (code: string) => void; 
+  onLogin: () => void;
+}) {
+  return (
+    <div className="min-h-screen bg-ink flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-4 border-orange shadow-brutal bg-cream">
+        <CardHeader className="text-center">
+          <div className="w-16 h-16 bg-orange rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-cream" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-ink">Panel de Administración</CardTitle>
+          <p className="text-ink/70">Introduce el código de acceso</p>
+        </CardHeader>
+        <CardContent>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              onLogin();
+            }}
+            className="space-y-4"
+          >
+            <Input
+              type="password"
+              placeholder="Código de acceso"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="text-center text-2xl tracking-widest border-2 border-ink"
+              maxLength={10}
+            />
+            <Button 
+              type="submit" 
+              className="w-full bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink"
+            >
+              Entrar
+            </Button>
+          </form>
+          <div className="mt-6 text-center">
+            <Link href="/" className="text-ink/70 hover:text-ink text-sm">
+              ← Volver al sitio
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Events Manager Component
+function EventsManager() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+
+  // Fetch events from API
+  const { data: events, isLoading, refetch } = trpc.events.list.useQuery();
+  
+  // Mutations
+  const createEvent = trpc.events.create.useMutation({
+    onSuccess: () => {
+      toast.success("Evento creado correctamente");
+      setIsCreateDialogOpen(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al crear evento: " + error.message);
+    }
+  });
+
+  const updateEvent = trpc.events.update.useMutation({
+    onSuccess: () => {
+      toast.success("Evento actualizado correctamente");
+      setEditingEvent(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al actualizar evento: " + error.message);
+    }
+  });
+
+  const deleteEvent = trpc.events.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Evento eliminado correctamente");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al eliminar evento: " + error.message);
+    }
+  });
+
+  const filteredEvents = events?.filter(event => 
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.date.includes(searchTerm)
+  ) || [];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-ink">Gestión de Eventos</h2>
+          <p className="text-ink/70">Crea, edita y elimina eventos del almorzar</p>
+        </div>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink">
+              <Plus size={18} className="mr-2" />
+              Nuevo Evento
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Evento</DialogTitle>
+            </DialogHeader>
+            <EventForm 
+              onSubmit={(data) => createEvent.mutate(data)} 
+              isLoading={createEvent.isPending}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/50" size={20} />
+        <Input
+          placeholder="Buscar eventos por título o fecha..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 border-2 border-ink"
+        />
+      </div>
+
+      {/* Events List */}
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-4 border-orange border-t-transparent rounded-full mx-auto" />
+          <p className="mt-4 text-ink/70">Cargando eventos...</p>
+        </div>
+      ) : filteredEvents.length === 0 ? (
+        <Card className="border-2 border-ink">
+          <CardContent className="py-12 text-center">
+            <Calendar className="w-12 h-12 mx-auto text-ink/30 mb-4" />
+            <p className="text-ink/70">No hay eventos que mostrar</p>
+            <p className="text-ink/50 text-sm">Crea tu primer evento usando el botón de arriba</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredEvents.map((event) => (
+            <Card key={event.id} className="border-2 border-ink hover:shadow-brutal transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  {/* Event Image */}
+                  <div className="w-24 h-24 bg-ink/10 rounded border-2 border-ink overflow-hidden flex-shrink-0">
+                    {event.image ? (
+                      <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Image className="w-8 h-8 text-ink/30" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Event Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="font-bold text-ink truncate">{event.title}</h3>
+                        <p className="text-sm text-ink/70">{event.date}</p>
+                        {event.chef && (
+                          <p className="text-sm text-orange">Chef: {event.chef}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingEvent(event)}
+                          className="border-ink"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm("¿Estás seguro de eliminar este evento?")) {
+                              deleteEvent.mutate({ id: event.id });
+                            }
+                          }}
+                          className="border-red-500 text-red-500 hover:bg-red-50"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                    {event.description && (
+                      <p className="text-sm text-ink/60 mt-2 line-clamp-2">{event.description}</p>
+                    )}
+                    {event.menuItems && event.menuItems.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {event.menuItems.slice(0, 3).map((item, i) => (
+                          <span key={i} className="text-xs bg-orange/20 text-orange px-2 py-0.5 rounded">
+                            {item}
+                          </span>
+                        ))}
+                        {event.menuItems.length > 3 && (
+                          <span className="text-xs text-ink/50">+{event.menuItems.length - 3} más</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Evento</DialogTitle>
+          </DialogHeader>
+          {editingEvent && (
+            <EventForm 
+              initialData={editingEvent}
+              onSubmit={(data) => updateEvent.mutate({ id: editingEvent.id, ...data })} 
+              isLoading={updateEvent.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Event Form Component
+function EventForm({ 
+  initialData, 
+  onSubmit, 
+  isLoading 
+}: { 
+  initialData?: any; 
+  onSubmit: (data: any) => void; 
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    title: initialData?.title || "",
+    date: initialData?.date || "",
+    description: initialData?.description || "",
+    image: initialData?.image || "",
+    chef: initialData?.chef || "",
+    menuItems: initialData?.menuItems?.join("\n") || "",
+    gallery: initialData?.gallery?.join("\n") || "",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...formData,
+      menuItems: formData.menuItems.split("\n").filter((item: string) => item.trim()),
+      gallery: formData.gallery.split("\n").filter((url: string) => url.trim()),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="title">Título del Evento *</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            placeholder="ej: Almorzar de Reyes"
+            required
+            className="border-2 border-ink"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="date">Fecha *</Label>
+          <Input
+            id="date"
+            type="date"
+            value={formData.date}
+            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            required
+            className="border-2 border-ink"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="chef">Chef</Label>
+        <Input
+          id="chef"
+          value={formData.chef}
+          onChange={(e) => setFormData({ ...formData, chef: e.target.value })}
+          placeholder="ej: Justin"
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Descripción</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Descripción del evento..."
+          rows={3}
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="image">URL de Imagen Principal</Label>
+        <Input
+          id="image"
+          value={formData.image}
+          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+          placeholder="https://..."
+          className="border-2 border-ink"
+        />
+        {formData.image && (
+          <img src={formData.image} alt="Preview" className="w-32 h-32 object-cover rounded border-2 border-ink mt-2" />
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="menuItems">Menú del Día (uno por línea)</Label>
+        <Textarea
+          id="menuItems"
+          value={formData.menuItems}
+          onChange={(e) => setFormData({ ...formData, menuItems: e.target.value })}
+          placeholder="Tortilla de patatas&#10;Bocadillo de jamón&#10;Ensalada mixta"
+          rows={4}
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="gallery">Galería de Fotos (URLs, una por línea)</Label>
+        <Textarea
+          id="gallery"
+          value={formData.gallery}
+          onChange={(e) => setFormData({ ...formData, gallery: e.target.value })}
+          placeholder="https://...&#10;https://...&#10;https://..."
+          rows={3}
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="submit" disabled={isLoading} className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink">
+          {isLoading ? (
+            <>
+              <div className="animate-spin w-4 h-4 border-2 border-cream border-t-transparent rounded-full mr-2" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <Save size={18} className="mr-2" />
+              Guardar Evento
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// Food Items Manager Component
+function FoodItemsManager() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
+  const { data: foodItems, isLoading, refetch } = trpc.foodItems.list.useQuery();
+
+  const createFoodItem = trpc.foodItems.create.useMutation({
+    onSuccess: () => {
+      toast.success("Plato creado correctamente");
+      setIsCreateDialogOpen(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al crear plato: " + error.message);
+    }
+  });
+
+  const updateFoodItem = trpc.foodItems.update.useMutation({
+    onSuccess: () => {
+      toast.success("Plato actualizado correctamente");
+      setEditingItem(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al actualizar plato: " + error.message);
+    }
+  });
+
+  const deleteFoodItem = trpc.foodItems.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Plato eliminado correctamente");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al eliminar plato: " + error.message);
+    }
+  });
+
+  const categories = ["Bocadillos", "Tortillas", "Hamburguesas", "Bandejas", "Ensaladas", "Carnes", "Pescados y Mariscos", "Especialidades"];
+
+  const filteredItems = foodItems?.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  }) || [];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-ink">Hall of Fame</h2>
+          <p className="text-ink/70">Gestiona los platos legendarios del gremio</p>
+        </div>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink">
+              <Plus size={18} className="mr-2" />
+              Nuevo Plato
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Plato</DialogTitle>
+            </DialogHeader>
+            <FoodItemForm 
+              categories={categories}
+              onSubmit={(data) => createFoodItem.mutate(data)} 
+              isLoading={createFoodItem.isPending}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/50" size={20} />
+          <Input
+            placeholder="Buscar platos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 border-2 border-ink"
+          />
+        </div>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-full md:w-48 border-2 border-ink">
+            <SelectValue placeholder="Categoría" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las categorías</SelectItem>
+            {categories.map(cat => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Food Items Grid */}
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-4 border-orange border-t-transparent rounded-full mx-auto" />
+          <p className="mt-4 text-ink/70">Cargando platos...</p>
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <Card className="border-2 border-ink">
+          <CardContent className="py-12 text-center">
+            <UtensilsCrossed className="w-12 h-12 mx-auto text-ink/30 mb-4" />
+            <p className="text-ink/70">No hay platos que mostrar</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredItems.map((item) => (
+            <Card key={item.id} className="border-2 border-ink hover:shadow-brutal transition-shadow">
+              <CardContent className="p-4">
+                <div className="aspect-video bg-ink/10 rounded border-2 border-ink overflow-hidden mb-3">
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Image className="w-8 h-8 text-ink/30" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-bold text-ink line-clamp-1">{item.name}</h3>
+                    {item.rank && (
+                      <span className="bg-yellow text-ink text-xs font-bold px-2 py-0.5 rounded">
+                        #{item.rank}
+                      </span>
+                    )}
+                  </div>
+                  {item.category && (
+                    <span className="text-xs bg-orange/20 text-orange px-2 py-0.5 rounded">
+                      {item.category}
+                    </span>
+                  )}
+                  {item.description && (
+                    <p className="text-sm text-ink/60 line-clamp-2">{item.description}</p>
+                  )}
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingItem(item)}
+                      className="border-ink"
+                    >
+                      <Edit size={14} />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm("¿Estás seguro de eliminar este plato?")) {
+                          deleteFoodItem.mutate({ id: item.id });
+                        }
+                      }}
+                      className="border-red-500 text-red-500 hover:bg-red-50"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Plato</DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <FoodItemForm 
+              categories={categories}
+              initialData={editingItem}
+              onSubmit={(data) => updateFoodItem.mutate({ id: editingItem.id, ...data })} 
+              isLoading={updateFoodItem.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Food Item Form Component
+function FoodItemForm({ 
+  categories,
+  initialData, 
+  onSubmit, 
+  isLoading 
+}: { 
+  categories: string[];
+  initialData?: any; 
+  onSubmit: (data: any) => void; 
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: initialData?.name || "",
+    description: initialData?.description || "",
+    image: initialData?.image || "",
+    category: initialData?.category || "",
+    chef: initialData?.chef || "",
+    rank: initialData?.rank || null,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="name">Nombre del Plato *</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="ej: Tortilla de Bar Pizcueta"
+          required
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="category">Categoría</Label>
+          <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+            <SelectTrigger className="border-2 border-ink">
+              <SelectValue placeholder="Seleccionar..." />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="rank">Ranking</Label>
+          <Select 
+            value={formData.rank?.toString() || ""} 
+            onValueChange={(value) => setFormData({ ...formData, rank: value ? parseInt(value) : null })}
+          >
+            <SelectTrigger className="border-2 border-ink">
+              <SelectValue placeholder="Sin ranking" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Sin ranking</SelectItem>
+              <SelectItem value="1">#1</SelectItem>
+              <SelectItem value="2">#2</SelectItem>
+              <SelectItem value="3">#3</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="chef">Chef</Label>
+        <Input
+          id="chef"
+          value={formData.chef}
+          onChange={(e) => setFormData({ ...formData, chef: e.target.value })}
+          placeholder="ej: Justin"
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">Descripción</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Descripción del plato..."
+          rows={3}
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="image">URL de Imagen</Label>
+        <Input
+          id="image"
+          value={formData.image}
+          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+          placeholder="https://..."
+          className="border-2 border-ink"
+        />
+        {formData.image && (
+          <img src={formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border-2 border-ink mt-2" />
+        )}
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="submit" disabled={isLoading} className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink">
+          {isLoading ? "Guardando..." : "Guardar Plato"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// Chefs Manager Component
+function ChefsManager() {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingChef, setEditingChef] = useState<any>(null);
+
+  const { data: chefs, isLoading, refetch } = trpc.chefs.list.useQuery();
+
+  const createChef = trpc.chefs.create.useMutation({
+    onSuccess: () => {
+      toast.success("Cocinero creado correctamente");
+      setIsCreateDialogOpen(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al crear cocinero: " + error.message);
+    }
+  });
+
+  const updateChef = trpc.chefs.update.useMutation({
+    onSuccess: () => {
+      toast.success("Cocinero actualizado correctamente");
+      setEditingChef(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al actualizar cocinero: " + error.message);
+    }
+  });
+
+  const deleteChef = trpc.chefs.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Cocinero eliminado correctamente");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al eliminar cocinero: " + error.message);
+    }
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-ink">Los Cocineros</h2>
+          <p className="text-ink/70">Gestiona los perfiles de los chefs del gremio</p>
+        </div>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink">
+              <Plus size={18} className="mr-2" />
+              Nuevo Cocinero
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Crear Nuevo Cocinero</DialogTitle>
+            </DialogHeader>
+            <ChefForm 
+              onSubmit={(data) => createChef.mutate(data)} 
+              isLoading={createChef.isPending}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Chefs Grid */}
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-4 border-orange border-t-transparent rounded-full mx-auto" />
+          <p className="mt-4 text-ink/70">Cargando cocineros...</p>
+        </div>
+      ) : !chefs || chefs.length === 0 ? (
+        <Card className="border-2 border-ink">
+          <CardContent className="py-12 text-center">
+            <Users className="w-12 h-12 mx-auto text-ink/30 mb-4" />
+            <p className="text-ink/70">No hay cocineros registrados</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {chefs.map((chef) => (
+            <Card key={chef.id} className="border-2 border-ink hover:shadow-brutal transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-16 h-16 rounded-full bg-ink/10 border-2 border-ink overflow-hidden flex-shrink-0">
+                    {chef.avatar ? (
+                      <img src={chef.avatar} alt={chef.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-ink/30">
+                        {chef.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-ink">{chef.name}</h3>
+                    {chef.nickname && (
+                      <p className="text-sm text-orange">"{chef.nickname}"</p>
+                    )}
+                    {chef.specialty && (
+                      <p className="text-sm text-ink/60 mt-1">{chef.specialty}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mt-4 text-center">
+                  <div className="bg-ink/5 p-2 rounded">
+                    <div className="text-xl font-bold text-ink">{chef.eventsHosted || 0}</div>
+                    <div className="text-xs text-ink/60">Eventos</div>
+                  </div>
+                  <div className="bg-ink/5 p-2 rounded">
+                    <div className="text-xl font-bold text-ink">{chef.dishesCreated || 0}</div>
+                    <div className="text-xs text-ink/60">Platos</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingChef(chef)}
+                    className="border-ink"
+                  >
+                    <Edit size={14} className="mr-1" />
+                    Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm("¿Estás seguro de eliminar este cocinero?")) {
+                        deleteChef.mutate({ id: chef.id });
+                      }
+                    }}
+                    className="border-red-500 text-red-500 hover:bg-red-50"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingChef} onOpenChange={(open) => !open && setEditingChef(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Cocinero</DialogTitle>
+          </DialogHeader>
+          {editingChef && (
+            <ChefForm 
+              initialData={editingChef}
+              onSubmit={(data) => updateChef.mutate({ id: editingChef.id, ...data })} 
+              isLoading={updateChef.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Chef Form Component
+function ChefForm({ 
+  initialData, 
+  onSubmit, 
+  isLoading 
+}: { 
+  initialData?: any; 
+  onSubmit: (data: any) => void; 
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: initialData?.name || "",
+    nickname: initialData?.nickname || "",
+    avatar: initialData?.avatar || "",
+    bio: initialData?.bio || "",
+    specialty: initialData?.specialty || "",
+    signatureDishes: initialData?.signatureDishes?.join("\n") || "",
+    eventsHosted: initialData?.eventsHosted || 0,
+    dishesCreated: initialData?.dishesCreated || 0,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      ...formData,
+      signatureDishes: formData.signatureDishes.split("\n").filter((dish: string) => dish.trim()),
+      eventsHosted: parseInt(formData.eventsHosted.toString()) || 0,
+      dishesCreated: parseInt(formData.dishesCreated.toString()) || 0,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Nombre *</Label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="ej: Justin"
+            required
+            className="border-2 border-ink"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="nickname">Apodo</Label>
+          <Input
+            id="nickname"
+            value={formData.nickname}
+            onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+            placeholder="ej: El Arquitecto"
+            className="border-2 border-ink"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="specialty">Especialidad</Label>
+        <Input
+          id="specialty"
+          value={formData.specialty}
+          onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+          placeholder="ej: Cocina Mediterránea"
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="bio">Biografía</Label>
+        <Textarea
+          id="bio"
+          value={formData.bio}
+          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+          placeholder="Breve descripción del cocinero..."
+          rows={3}
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="avatar">URL de Avatar</Label>
+        <Input
+          id="avatar"
+          value={formData.avatar}
+          onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
+          placeholder="https://..."
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="signatureDishes">Platos Estrella (uno por línea)</Label>
+        <Textarea
+          id="signatureDishes"
+          value={formData.signatureDishes}
+          onChange={(e) => setFormData({ ...formData, signatureDishes: e.target.value })}
+          placeholder="Tortilla de patatas&#10;Bocadillo especial"
+          rows={3}
+          className="border-2 border-ink"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="eventsHosted">Eventos Organizados</Label>
+          <Input
+            id="eventsHosted"
+            type="number"
+            value={formData.eventsHosted}
+            onChange={(e) => setFormData({ ...formData, eventsHosted: parseInt(e.target.value) || 0 })}
+            min={0}
+            className="border-2 border-ink"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="dishesCreated">Platos Creados</Label>
+          <Input
+            id="dishesCreated"
+            type="number"
+            value={formData.dishesCreated}
+            onChange={(e) => setFormData({ ...formData, dishesCreated: parseInt(e.target.value) || 0 })}
+            min={0}
+            className="border-2 border-ink"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="submit" disabled={isLoading} className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink">
+          {isLoading ? "Guardando..." : "Guardar Cocinero"}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// Settings Manager Component
+function SettingsManager() {
+  const [nextEventData, setNextEventData] = useState({
+    title: "",
+    date: "",
+    time: "12:00",
+    chef: "",
+  });
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  const seedMutation = trpc.seed.run.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Base de datos inicializada: ${data.events} eventos, ${data.foodItems} platos, ${data.chefs} cocineros`);
+      setIsSeeding(false);
+    },
+    onError: (error) => {
+      toast.error("Error al inicializar: " + error.message);
+      setIsSeeding(false);
+    }
+  });
+
+  const { data: settings, refetch } = trpc.settings.get.useQuery({ key: "nextEvent" });
+
+  const updateSetting = trpc.settings.set.useMutation({
+    onSuccess: () => {
+      toast.success("Ajustes guardados correctamente");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al guardar ajustes: " + error.message);
+    }
+  });
+
+  useEffect(() => {
+    if (settings?.value) {
+      try {
+        const parsed = JSON.parse(settings.value);
+        setNextEventData(parsed);
+      } catch (e) {
+        // ignore parse errors
+      }
+    }
+  }, [settings]);
+
+  const handleSaveNextEvent = () => {
+    updateSetting.mutate({
+      key: "nextEvent",
+      value: JSON.stringify(nextEventData),
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-ink">Ajustes del Sitio</h2>
+        <p className="text-ink/70">Configura el contenido dinámico del sitio</p>
+      </div>
+
+      {/* Next Event Settings */}
+      <Card className="border-2 border-ink">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-orange" />
+            Próximo Evento (Countdown)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nextEventTitle">Título del Evento</Label>
+              <Input
+                id="nextEventTitle"
+                value={nextEventData.title}
+                onChange={(e) => setNextEventData({ ...nextEventData, title: e.target.value })}
+                placeholder="ej: Almorzar de Reyes"
+                className="border-2 border-ink"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nextEventChef">Chef</Label>
+              <Input
+                id="nextEventChef"
+                value={nextEventData.chef}
+                onChange={(e) => setNextEventData({ ...nextEventData, chef: e.target.value })}
+                placeholder="ej: Justin"
+                className="border-2 border-ink"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nextEventDate">Fecha</Label>
+              <Input
+                id="nextEventDate"
+                type="date"
+                value={nextEventData.date}
+                onChange={(e) => setNextEventData({ ...nextEventData, date: e.target.value })}
+                className="border-2 border-ink"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nextEventTime">Hora</Label>
+              <Input
+                id="nextEventTime"
+                type="time"
+                value={nextEventData.time}
+                onChange={(e) => setNextEventData({ ...nextEventData, time: e.target.value })}
+                className="border-2 border-ink"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleSaveNextEvent}
+              disabled={updateSetting.isPending}
+              className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink"
+            >
+              {updateSetting.isPending ? "Guardando..." : "Guardar Próximo Evento"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Seed Database */}
+      <Card className="border-2 border-ink">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-orange" />
+            Inicializar Base de Datos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-ink/70 text-sm">
+            Carga los datos iniciales (eventos de ejemplo, platos del Hall of Fame, y perfiles de cocineros) 
+            en la base de datos. Solo necesitas hacer esto una vez.
+          </p>
+          <Button 
+            onClick={() => {
+              setIsSeeding(true);
+              seedMutation.mutate();
+            }}
+            disabled={isSeeding || seedMutation.isPending}
+            className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink"
+          >
+            {isSeeding ? "Inicializando..." : "Inicializar Datos"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Site Info */}
+      <Card className="border-2 border-ink">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-orange" />
+            Información del Sitio
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-ink/70 text-sm">
+            Más ajustes del sitio estarán disponibles próximamente. Por ahora puedes gestionar 
+            eventos, platos y cocineros desde las pestañas correspondientes.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

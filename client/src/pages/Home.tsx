@@ -20,6 +20,7 @@ import { events, hallOfFame } from "@/data/events";
 import NextEventCountdown from "@/components/NextEventCountdown";
 
 export default function Home() {
+
   const featuredEvents = events.slice(0, 4);
   const featuredHallOfFame = hallOfFame.slice(0, 4);
 

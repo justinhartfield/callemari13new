@@ -15,8 +15,9 @@ import EventDetail from "./pages/EventDetail";
 import HallOfFame from "./pages/HallOfFame";
 import About from "./pages/About";
 import Chefs from "./pages/Chefs";
-
+import Admin from "./pages/Admin";
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path="/" component={Home} />
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/hall-of-fame" component={HallOfFame} />
       <Route path="/nosotros" component={About} />
       <Route path="/cocineros" component={Chefs} />
+      <Route path="/admin" component={Admin} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
