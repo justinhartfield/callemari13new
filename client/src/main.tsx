@@ -37,10 +37,20 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Determine API URL based on environment
+const getApiUrl = () => {
+  // For Netlify Functions, use /.netlify/functions/api/trpc
+  if (import.meta.env.PROD && typeof window !== 'undefined' && window.location.hostname.includes('netlify')) {
+    return "/.netlify/functions/api/trpc";
+  }
+  // Default to /api/trpc for development and other deployments
+  return "/api/trpc";
+};
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: getApiUrl(),
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
