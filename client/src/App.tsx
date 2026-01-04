@@ -15,6 +15,7 @@ import EventDetail from "./pages/EventDetail";
 import Menu from "./pages/Menu";
 import HallOfFame from "./pages/HallOfFame";
 import About from "./pages/About";
+import Chefs from "./pages/Chefs";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/menu" component={Menu} />
       <Route path="/hall-of-fame" component={HallOfFame} />
       <Route path="/nosotros" component={About} />
+      <Route path="/cocineros" component={Chefs} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

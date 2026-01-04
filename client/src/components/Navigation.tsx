@@ -13,6 +13,7 @@ const navLinks = [
   { href: "/eventos", label: "Eventos" },
   { href: "/menu", label: "Menú" },
   { href: "/hall-of-fame", label: "Hall of Fame" },
+  { href: "/cocineros", label: "Cocineros" },
   { href: "/nosotros", label: "Nosotros" },
 ];
 

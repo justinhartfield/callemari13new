@@ -1,246 +1,287 @@
 /**
  * DESIGN: Neo-Brutalist "Zine Bodega"
- * Menu page - Showcasing signature dishes and categories
+ * Visual Menu page with food images organized by category
  */
 
+import { useState } from "react";
+import { Search, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { events } from "@/data/events";
-
-// Extract unique menu items from all events
-const allMenuItems = events.flatMap((e) => e.menuItems).filter(Boolean);
-const uniqueMenuItems = Array.from(new Set(allMenuItems));
-
-// Categorize menu items
-const categories = {
-  tortillas: uniqueMenuItems.filter(
-    (item) => item.toLowerCase().includes("tortilla")
-  ),
-  hamburguesas: uniqueMenuItems.filter(
-    (item) =>
-      item.toLowerCase().includes("hamburguesa") ||
-      item.toLowerCase().includes("burger")
-  ),
-  pescados: uniqueMenuItems.filter(
-    (item) =>
-      item.toLowerCase().includes("salmon") ||
-      item.toLowerCase().includes("bacalao") ||
-      item.toLowerCase().includes("calamar") ||
-      item.toLowerCase().includes("gambas") ||
-      item.toLowerCase().includes("marisco")
-  ),
-  carnes: uniqueMenuItems.filter(
-    (item) =>
-      item.toLowerCase().includes("pollo") ||
-      item.toLowerCase().includes("carne") ||
-      item.toLowerCase().includes("chivito") ||
-      item.toLowerCase().includes("conejo")
-  ),
-  especialidades: uniqueMenuItems.filter(
-    (item) =>
-      item.includes(":") || // Named dishes like "NERO:" or "MOSHE:"
-      item.toLowerCase().includes("especial")
-  ),
-};
-
-// Get remaining items not in any category
-const categorizedItems = Object.values(categories).flat();
-const otros = uniqueMenuItems.filter(
-  (item) => !categorizedItems.includes(item)
-);
+import { allFoodItems, menuCategories } from "@/data/foodItems";
 
 export default function Menu() {
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedItem, setSelectedItem] = useState<typeof allFoodItems[0] | null>(null);
+  
+  // Filter items based on category and search
+  const filteredItems = allFoodItems.filter(item => {
+    const matchesCategory = activeCategory === null || item.category === activeCategory;
+    const matchesSearch = searchQuery === "" || 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+  
+  // Group by category for display
+  const groupedItems = menuCategories.map(cat => ({
+    ...cat,
+    items: filteredItems.filter(item => item.category === cat.name)
+  })).filter(cat => cat.items.length > 0);
+  
   return (
     <div className="min-h-screen bg-cream">
       <Navigation />
 
       {/* Hero */}
-      <section className="pt-24 pb-12 md:pt-32 md:pb-16 bg-ink relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <img
-            src="/images/menu-pattern.jpg"
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
+      <section
+        className="pt-24 pb-12 md:pt-32 md:pb-16 relative"
+        style={{
+          backgroundImage: "url('/images/menu-pattern.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-ink/85" />
         <div className="container relative z-10">
-          <div className="sticker-badge mb-4">La Carta</div>
+          <div className="sticker-badge mb-4">🍽️ Nuestras Creaciones</div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-cream mb-4">
-            Nuestro<br />
+            El<br />
             <span className="text-orange">Menú</span>
           </h1>
           <p className="text-cream/70 text-lg max-w-2xl">
-            Cocina de autor rotativo. Cada viernes, un miembro diferente 
-            del gremio toma las riendas de la cocina.
+            Más de 120 platos creados por el gremio. Desde bocadillos legendarios 
+            hasta bandejas épicas, cada plato cuenta una historia.
           </p>
         </div>
       </section>
 
-      {/* Menu Categories */}
-      <section className="py-12 md:py-16">
+      {/* Stats Bar */}
+      <section className="py-6 bg-orange border-b-4 border-ink">
         <div className="container">
-          {/* Intro Card */}
-          <div className="brutal-card-orange p-6 md:p-8 mb-12 max-w-3xl">
-            <h2 className="text-2xl font-bold text-ink mb-4">
-              Cocina Rotativa
-            </h2>
-            <p className="text-ink/80 leading-relaxed">
-              En Martí 13 no hay chef fijo. Cada semana, un miembro diferente 
-              del gremio se encarga de preparar el almuerzo. Esto significa 
-              que nuestro menú es tan diverso como nuestros cocineros: desde 
-              la tortilla clásica de Óscar hasta las creaciones experimentales 
-              de Nero.
-            </p>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-cream">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold">{allFoodItems.length}</div>
+              <div className="text-cream/80 text-sm uppercase tracking-wide">Platos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold">{menuCategories.length}</div>
+              <div className="text-cream/80 text-sm uppercase tracking-wide">Categorías</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold">∞</div>
+              <div className="text-cream/80 text-sm uppercase tracking-wide">Sabores</div>
+            </div>
           </div>
+        </div>
+      </section>
 
-          {/* Categories Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            {/* Tortillas */}
-            <div className="brutal-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">🥚</span>
-                <h3 className="text-2xl font-bold text-ink">Tortillas</h3>
-              </div>
-              <p className="text-ink/70 text-sm mb-4">
-                El clásico valenciano que nunca falta
-              </p>
-              <ul className="space-y-2">
-                {categories.tortillas.length > 0 ? (
-                  categories.tortillas.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 p-2 bg-cream border-l-4 border-orange"
-                    >
-                      <span className="text-orange">•</span>
-                      <span className="text-ink font-medium">{item}</span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-ink/60 italic">Tortilla de toda la vida</li>
-                )}
-              </ul>
-            </div>
-
-            {/* Hamburguesas */}
-            <div className="brutal-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">🍔</span>
-                <h3 className="text-2xl font-bold text-ink">Hamburguesas</h3>
-              </div>
-              <p className="text-ink/70 text-sm mb-4">
-                De potro, vaca, conejo y más
-              </p>
-              <ul className="space-y-2">
-                {categories.hamburguesas.map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 p-2 bg-cream border-l-4 border-orange"
-                  >
-                    <span className="text-orange">•</span>
-                    <span className="text-ink font-medium">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Pescados y Mariscos */}
-            <div className="brutal-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">🐟</span>
-                <h3 className="text-2xl font-bold text-ink">Pescados & Mariscos</h3>
-              </div>
-              <p className="text-ink/70 text-sm mb-4">
-                Frescos del Mediterráneo
-              </p>
-              <ul className="space-y-2">
-                {categories.pescados.map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 p-2 bg-cream border-l-4 border-orange"
-                  >
-                    <span className="text-orange">•</span>
-                    <span className="text-ink font-medium">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Carnes */}
-            <div className="brutal-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">🥩</span>
-                <h3 className="text-2xl font-bold text-ink">Carnes</h3>
-              </div>
-              <p className="text-ink/70 text-sm mb-4">
-                Preparaciones de todo tipo
-              </p>
-              <ul className="space-y-2">
-                {categories.carnes.map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 p-2 bg-cream border-l-4 border-orange"
-                  >
-                    <span className="text-orange">•</span>
-                    <span className="text-ink font-medium">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Especialidades */}
-            <div className="brutal-card-orange p-6 md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">⭐</span>
-                <h3 className="text-2xl font-bold text-ink">Especialidades de la Casa</h3>
-              </div>
-              <p className="text-ink/70 text-sm mb-4">
-                Creaciones únicas de nuestros chefs
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {categories.especialidades.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-2 p-3 bg-cream border-2 border-ink"
-                  >
-                    <span className="text-orange font-bold">★</span>
-                    <span className="text-ink font-medium">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Otros */}
-            {otros.length > 0 && (
-              <div className="brutal-card p-6 md:col-span-2">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-3xl">🍽️</span>
-                  <h3 className="text-2xl font-bold text-ink">Otros Platos</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {otros.map((item, i) => (
-                    <span
-                      key={i}
-                      className="px-3 py-1 bg-ink/10 border border-ink/30 text-ink text-sm font-medium"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
+      {/* Search and Filter */}
+      <section className="py-6 bg-cream border-b-4 border-ink sticky top-0 z-40">
+        <div className="container">
+          {/* Search Bar */}
+          <div className="relative max-w-md mx-auto mb-4">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink/50" />
+            <input
+              type="text"
+              placeholder="Buscar platos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border-4 border-ink bg-white font-bold placeholder:text-ink/50 focus:outline-none focus:shadow-brutal"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2"
+              >
+                <X className="w-5 h-5 text-ink/50 hover:text-ink" />
+              </button>
             )}
           </div>
+          
+          {/* Category Filter */}
+          <div className="flex flex-wrap justify-center gap-2">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className={`px-4 py-2 font-bold text-sm transition-all ${
+                activeCategory === null
+                  ? "bg-ink text-cream shadow-brutal"
+                  : "bg-cream text-ink border-2 border-ink hover:bg-ink hover:text-cream"
+              }`}
+            >
+              Todos ({allFoodItems.length})
+            </button>
+            {menuCategories.map((category) => (
+              <button
+                key={category.name}
+                onClick={() => setActiveCategory(category.name)}
+                className={`px-4 py-2 font-bold text-sm transition-all flex items-center gap-1 ${
+                  activeCategory === category.name
+                    ? "bg-ink text-cream shadow-brutal"
+                    : "bg-cream text-ink border-2 border-ink hover:bg-ink hover:text-cream"
+                }`}
+              >
+                <span>{category.icon}</span>
+                <span className="hidden sm:inline">{category.name}</span>
+                <span className="text-xs opacity-70">
+                  ({allFoodItems.filter(i => i.category === category.name).length})
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Note */}
-      <section className="py-12 bg-ink">
-        <div className="container text-center">
-          <p className="text-cream/80 text-lg italic max-w-2xl mx-auto">
-            "El menú cambia cada semana según el chef de turno. 
-            Esto es solo una muestra de lo que hemos servido."
-          </p>
+      {/* Menu Content */}
+      <section className="py-12 md:py-16">
+        <div className="container">
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-2xl font-bold text-ink/50">
+                No se encontraron platos con "{searchQuery}"
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveCategory(null);
+                }}
+                className="mt-4 text-orange font-bold hover:underline"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+          ) : activeCategory ? (
+            // Single category view
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              {filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedItem(item)}
+                  className="group brutal-card overflow-hidden hover:shadow-brutal-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+                >
+                  <div className="relative aspect-square overflow-hidden border-b-4 border-ink">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/images/hero-almorzar.jpg";
+                      }}
+                    />
+                  </div>
+                  <div className="p-3 md:p-4">
+                    <h3 className="font-bold text-ink text-sm md:text-base line-clamp-2">
+                      {item.name}
+                    </h3>
+                    <p className="text-ink/60 text-xs mt-1 line-clamp-2">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // All categories view
+            groupedItems.map((category) => (
+              <div key={category.name} className="mb-16">
+                <div className="flex items-center gap-4 mb-6">
+                  <span className="text-3xl md:text-4xl">{category.icon}</span>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-ink">{category.name}</h2>
+                    <p className="text-ink/60 text-sm">{category.description}</p>
+                  </div>
+                  <div className="flex-1 h-1 bg-ink/20 hidden md:block" />
+                  <span className="bg-orange text-cream px-3 py-1 font-bold text-sm">
+                    {category.items.length} platos
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                  {category.items.slice(0, 10).map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => setSelectedItem(item)}
+                      className="group brutal-card overflow-hidden hover:shadow-brutal-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+                    >
+                      <div className="relative aspect-square overflow-hidden border-b-4 border-ink">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/images/hero-almorzar.jpg";
+                          }}
+                        />
+                      </div>
+                      <div className="p-3 md:p-4">
+                        <h3 className="font-bold text-ink text-sm md:text-base line-clamp-2">
+                          {item.name}
+                        </h3>
+                        <p className="text-ink/60 text-xs mt-1 line-clamp-2">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {category.items.length > 10 && (
+                  <button
+                    onClick={() => setActiveCategory(category.name)}
+                    className="mt-6 text-orange font-bold hover:underline flex items-center gap-2"
+                  >
+                    Ver todos los {category.items.length} platos de {category.name} →
+                  </button>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </section>
+
+      {/* Item Detail Modal */}
+      {selectedItem && (
+        <div 
+          className="fixed inset-0 bg-ink/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedItem(null)}
+        >
+          <div 
+            className="bg-cream border-4 border-ink shadow-brutal-lg max-w-2xl w-full max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative aspect-video overflow-hidden border-b-4 border-ink">
+              <img
+                src={selectedItem.image}
+                alt={selectedItem.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/images/hero-almorzar.jpg";
+                }}
+              />
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="absolute top-4 right-4 bg-ink text-cream p-2 hover:bg-orange transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <div className="absolute bottom-4 left-4 bg-orange text-cream px-3 py-1 font-bold">
+                {selectedItem.category}
+              </div>
+            </div>
+            <div className="p-6 md:p-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-ink mb-4">
+                {selectedItem.name}
+              </h2>
+              <p className="text-ink/80 text-lg leading-relaxed">
+                {selectedItem.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
