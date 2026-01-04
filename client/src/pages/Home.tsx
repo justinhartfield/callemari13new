@@ -16,11 +16,12 @@ import Footer from "@/components/Footer";
 import MarketTicker from "@/components/MarketTicker";
 import EventCard from "@/components/EventCard";
 import HallOfFameCard from "@/components/HallOfFameCard";
-import { events, hallOfFame } from "@/data/events";
+import { hallOfFame } from "@/data/events";
+import { useEvents } from "@/hooks/useEvents";
 import NextEventCountdown from "@/components/NextEventCountdown";
 
 export default function Home() {
-
+  const { events, isLoading } = useEvents();
   const featuredEvents = events.slice(0, 4);
   const featuredHallOfFame = hallOfFame.slice(0, 4);
 
@@ -133,7 +134,15 @@ export default function Home() {
             {featuredEvents.map((event, index) => (
               <EventCard
                 key={event.id}
-                event={event}
+                event={{
+                  id: String(event.id),
+                  title: event.title,
+                  date: event.date,
+                  description: event.description || "",
+                  image: event.image || "/images/hero-almorzar.jpg",
+                  menuItems: event.menuItems || [],
+                  gallery: event.gallery || [],
+                }}
                 variant={index === 0 ? "featured" : "default"}
               />
             ))}

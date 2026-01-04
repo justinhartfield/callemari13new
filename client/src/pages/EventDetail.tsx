@@ -1,25 +1,25 @@
 /**
  * DESIGN: Neo-Brutalist "Zine Bodega"
  * Event Detail page - Full event information with photos and menu
- * Photo gallery with lightbox from marti13.es
+ * Photo gallery with lightbox - Now fetches from database
  */
 
 import { useState } from "react";
 import { useParams, Link } from "wouter";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { events } from "@/data/events";
-import { ArrowLeft, Calendar, ChefHat, X, ChevronLeft, ChevronRight, Images } from "lucide-react";
+import { useEvent } from "@/hooks/useEvents";
+import { ArrowLeft, Calendar, ChefHat, X, ChevronLeft, ChevronRight, Images, Loader2 } from "lucide-react";
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
-  const event = events.find((e) => e.id === id);
+  const { event, isLoading } = useEvent(id || "0");
   
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Get all images including main image and gallery
-  const allImages = event ? [event.image, ...(event.gallery || [])] : [];
+  const allImages = event ? [event.image || "", ...(event.gallery || [])].filter(Boolean) : [];
   
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
@@ -37,6 +37,19 @@ export default function EventDetail() {
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-cream">
+        <Navigation />
+        <div className="container py-32 text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-orange mx-auto" />
+          <p className="mt-4 text-ink font-semibold">Cargando evento...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -81,6 +94,10 @@ export default function EventDetail() {
     }).toUpperCase();
   };
 
+  const menuItems = event.menuItems || [];
+  const gallery = event.gallery || [];
+  const mainImage = event.image || "/images/hero-almorzar.jpg";
+
   return (
     <div className="min-h-screen bg-cream">
       <Navigation />
@@ -104,7 +121,7 @@ export default function EventDetail() {
           onClick={() => openLightbox(0)}
         >
           <img
-            src={event.image}
+            src={mainImage}
             alt={event.title}
             className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
           />
@@ -133,9 +150,17 @@ export default function EventDetail() {
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-cream mb-4 max-w-4xl">
                 {event.title}
               </h1>
-              <div className="flex items-center gap-2 text-cream/80">
-                <Calendar size={18} />
-                <span className="capitalize">{formatDate(event.date)}</span>
+              <div className="flex items-center gap-4 text-cream/80">
+                <div className="flex items-center gap-2">
+                  <Calendar size={18} />
+                  <span className="capitalize">{formatDate(event.date)}</span>
+                </div>
+                {event.chef && (
+                  <div className="flex items-center gap-2">
+                    <ChefHat size={18} />
+                    <span>Chef: {event.chef}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -152,7 +177,7 @@ export default function EventDetail() {
               <div className="brutal-card p-6 md:p-8">
                 <h2 className="text-2xl font-bold text-ink mb-4">Sobre este evento</h2>
                 <p className="text-ink/80 text-lg leading-relaxed">
-                  {event.description}
+                  {event.description || "No hay descripción disponible para este evento."}
                 </p>
               </div>
 
@@ -163,9 +188,9 @@ export default function EventDetail() {
                   <h2 className="text-2xl font-bold text-ink">Fotos del Evento</h2>
                 </div>
                 
-                {event.gallery && event.gallery.length > 0 ? (
+                {gallery.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {event.gallery.map((photo, index) => (
+                    {gallery.map((photo, index) => (
                       <div 
                         key={index}
                         className="aspect-square overflow-hidden border-4 border-ink shadow-brutal cursor-pointer hover:shadow-brutal-lg transition-all duration-100 hover:-translate-y-1 group"
@@ -189,7 +214,7 @@ export default function EventDetail() {
                         onClick={() => openLightbox(0)}
                       >
                         <img
-                          src={event.image}
+                          src={mainImage}
                           alt={event.title}
                           className="w-full h-64 md:h-96 object-cover transition-transform duration-300 group-hover:scale-105"
                         />
@@ -214,9 +239,9 @@ export default function EventDetail() {
                   <h2 className="text-xl font-bold text-ink">Menú del Día</h2>
                 </div>
                 
-                {event.menuItems.length > 0 ? (
+                {menuItems.length > 0 ? (
                   <ul className="space-y-3">
-                    {event.menuItems.map((item, index) => (
+                    {menuItems.map((item, index) => (
                       <li
                         key={index}
                         className="flex items-start gap-3 p-3 bg-cream border-2 border-ink"
@@ -237,7 +262,7 @@ export default function EventDetail() {
                   <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
                       <div className="text-2xl font-bold text-ink">
-                        {event.menuItems.length}
+                        {menuItems.length}
                       </div>
                       <div className="text-xs text-ink/70 uppercase tracking-wide">
                         Platos
@@ -290,58 +315,58 @@ export default function EventDetail() {
         </div>
       </section>
 
-      <Footer />
-      
-      {/* Lightbox Modal */}
-      {lightboxOpen && (
+      {/* Lightbox */}
+      {lightboxOpen && allImages.length > 0 && (
         <div 
-          className="fixed inset-0 z-50 bg-ink/95 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-ink/95 z-50 flex items-center justify-center"
           onClick={closeLightbox}
         >
           {/* Close button */}
-          <button 
-            className="absolute top-4 right-4 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-yellow transition-colors z-10"
+          <button
             onClick={closeLightbox}
+            className="absolute top-4 right-4 md:top-8 md:right-8 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-orange hover:text-cream transition-colors z-50"
           >
             <X size={24} />
           </button>
           
-          {/* Navigation buttons */}
+          {/* Image counter */}
+          <div className="absolute top-4 left-4 md:top-8 md:left-8 bg-orange text-cream px-4 py-2 font-bold border-4 border-ink">
+            {currentImageIndex + 1} / {allImages.length}
+          </div>
+          
+          {/* Navigation arrows */}
           {allImages.length > 1 && (
             <>
-              <button 
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-yellow transition-colors z-10"
+              <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-orange hover:text-cream transition-colors"
               >
                 <ChevronLeft size={24} />
               </button>
-              <button 
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-yellow transition-colors z-10"
+              <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-cream text-ink p-3 border-4 border-ink shadow-brutal hover:bg-orange hover:text-cream transition-colors"
               >
                 <ChevronRight size={24} />
               </button>
             </>
           )}
           
-          {/* Image */}
+          {/* Main image */}
           <div 
-            className="max-w-[90vw] max-h-[85vh] relative"
+            className="max-w-[90vw] max-h-[80vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <img 
-              src={allImages[currentImageIndex]} 
+            <img
+              src={allImages[currentImageIndex]}
               alt={`${event.title} - Foto ${currentImageIndex + 1}`}
-              className="max-w-full max-h-[80vh] object-contain border-4 border-cream shadow-[8px_8px_0_0_#fdf6e3]"
+              className="max-w-full max-h-[80vh] object-contain border-4 border-ink shadow-brutal-lg"
             />
-            
-            {/* Image counter */}
-            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-cream text-ink px-4 py-2 font-bold border-4 border-ink">
-              {currentImageIndex + 1} / {allImages.length}
-            </div>
           </div>
         </div>
       )}
+
+      <Footer />
     </div>
   );
 }
