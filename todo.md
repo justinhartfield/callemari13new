@@ -15,3 +15,5 @@
 - [ ] Add image compression for uploaded images
 - [ ] Add bulk event import from CSV
 - [ ] Add event duplication feature
+- [x] Auto-reset countdown timer to next Friday at 11AM CET when it reaches zero
+- [x] Connect Hall of Fame page to database API

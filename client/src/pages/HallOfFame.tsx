@@ -1,33 +1,57 @@
 /**
  * DESIGN: Neo-Brutalist "Zine Bodega"
  * Hall of Fame page - All food items organized by category
+ * Now fetches data from database API
  */
 
-import { useState } from "react";
-import { Search, X, Trophy } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, X, Trophy, Loader2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import { allFoodItems, menuCategories } from "@/data/foodItems";
+import { useFoodItems, FoodItem } from "@/hooks/useFoodItems";
+
+// Category definitions with icons
+const menuCategories = [
+  { name: "Bocadillos", icon: "🥖", description: "Los clásicos bocadillos del gremio" },
+  { name: "Tortillas", icon: "🍳", description: "Tortillas de patatas y más" },
+  { name: "Bandejas", icon: "🍽️", description: "Platos combinados y bandejas" },
+  { name: "Hamburguesas", icon: "🍔", description: "Hamburguesas artesanales" },
+  { name: "Pescados", icon: "🐟", description: "Mariscos y pescados frescos" },
+  { name: "Carnes", icon: "🥩", description: "Carnes a la brasa y guisos" },
+  { name: "Ensaladas", icon: "🥗", description: "Ensaladas frescas" },
+  { name: "Mains", icon: "🍖", description: "Platos principales" },
+];
 
 export default function HallOfFame() {
+  const { foodItems, isLoading } = useFoodItems();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState<typeof allFoodItems[0] | null>(null);
+  const [selectedItem, setSelectedItem] = useState<FoodItem | null>(null);
   
   // Filter items based on category and search
-  const filteredItems = allFoodItems.filter(item => {
-    const matchesCategory = activeCategory === null || item.category === activeCategory;
-    const matchesSearch = searchQuery === "" || 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredItems = useMemo(() => {
+    return foodItems.filter(item => {
+      const matchesCategory = activeCategory === null || item.category === activeCategory;
+      const matchesSearch = searchQuery === "" || 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [foodItems, activeCategory, searchQuery]);
+  
+  // Get unique categories from database items
+  const availableCategories = useMemo(() => {
+    const cats = new Set(foodItems.map(item => item.category).filter(Boolean));
+    return menuCategories.filter(cat => cats.has(cat.name));
+  }, [foodItems]);
   
   // Group by category for display
-  const groupedItems = menuCategories.map(cat => ({
-    ...cat,
-    items: filteredItems.filter(item => item.category === cat.name)
-  })).filter(cat => cat.items.length > 0);
+  const groupedItems = useMemo(() => {
+    return availableCategories.map(cat => ({
+      ...cat,
+      items: filteredItems.filter(item => item.category === cat.name)
+    })).filter(cat => cat.items.length > 0);
+  }, [availableCategories, filteredItems]);
   
   return (
     <div className="min-h-screen bg-cream">
@@ -50,7 +74,7 @@ export default function HallOfFame() {
             <span className="text-orange">Fame</span>
           </h1>
           <p className="text-cream/70 text-lg max-w-2xl">
-            Más de 120 platos creados por el gremio. Desde bocadillos legendarios 
+            Más de {foodItems.length} platos creados por el gremio. Desde bocadillos legendarios 
             hasta bandejas épicas, cada plato cuenta una historia.
           </p>
         </div>
@@ -61,11 +85,11 @@ export default function HallOfFame() {
         <div className="container">
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-cream">
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold">{allFoodItems.length}</div>
+              <div className="text-3xl md:text-4xl font-bold">{foodItems.length}</div>
               <div className="text-cream/80 text-sm uppercase tracking-wide">Platos Legendarios</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold">{menuCategories.length}</div>
+              <div className="text-3xl md:text-4xl font-bold">{availableCategories.length}</div>
               <div className="text-cream/80 text-sm uppercase tracking-wide">Categorías</div>
             </div>
             <div className="text-center">
@@ -109,9 +133,9 @@ export default function HallOfFame() {
                   : "bg-cream text-ink border-2 border-ink hover:bg-ink hover:text-cream"
               }`}
             >
-              Todos ({allFoodItems.length})
+              Todos ({foodItems.length})
             </button>
-            {menuCategories.map((category) => (
+            {availableCategories.map((category) => (
               <button
                 key={category.name}
                 onClick={() => setActiveCategory(category.name)}
@@ -124,7 +148,7 @@ export default function HallOfFame() {
                 <span>{category.icon}</span>
                 <span className="hidden sm:inline">{category.name}</span>
                 <span className="text-xs opacity-70">
-                  ({allFoodItems.filter(i => i.category === category.name).length})
+                  ({foodItems.filter(i => i.category === category.name).length})
                 </span>
               </button>
             ))}
@@ -135,10 +159,14 @@ export default function HallOfFame() {
       {/* Hall of Fame Content */}
       <section className="py-12 md:py-16">
         <div className="container">
-          {filteredItems.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-16">
+              <Loader2 className="w-12 h-12 animate-spin text-orange" />
+            </div>
+          ) : filteredItems.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-2xl font-bold text-ink/50">
-                No se encontraron platos con "{searchQuery}"
+                {searchQuery ? `No se encontraron platos con "${searchQuery}"` : "No hay platos disponibles"}
               </p>
               <button
                 onClick={() => {
@@ -168,7 +196,7 @@ export default function HallOfFame() {
                   )}
                   <div className="relative aspect-square overflow-hidden border-b-4 border-ink">
                     <img
-                      src={item.image}
+                      src={item.image || "/images/hero-almorzar.jpg"}
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
@@ -182,8 +210,13 @@ export default function HallOfFame() {
                       {item.name}
                     </h3>
                     <p className="text-ink/60 text-xs mt-1 line-clamp-2">
-                      {item.description}
+                      {item.description || ""}
                     </p>
+                    {item.chef && (
+                      <p className="text-orange text-xs mt-2 font-semibold">
+                        Chef: {item.chef}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -220,7 +253,7 @@ export default function HallOfFame() {
                       )}
                       <div className="relative aspect-square overflow-hidden border-b-4 border-ink">
                         <img
-                          src={item.image}
+                          src={item.image || "/images/hero-almorzar.jpg"}
                           alt={item.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
@@ -234,8 +267,13 @@ export default function HallOfFame() {
                           {item.name}
                         </h3>
                         <p className="text-ink/60 text-xs mt-1 line-clamp-2">
-                          {item.description}
+                          {item.description || ""}
                         </p>
+                        {item.chef && (
+                          <p className="text-orange text-xs mt-2 font-semibold">
+                            Chef: {item.chef}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -267,7 +305,7 @@ export default function HallOfFame() {
           >
             <div className="relative aspect-video overflow-hidden border-b-4 border-ink">
               <img
-                src={selectedItem.image}
+                src={selectedItem.image || "/images/hero-almorzar.jpg"}
                 alt={selectedItem.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -292,9 +330,14 @@ export default function HallOfFame() {
                   {selectedItem.name}
                 </h2>
               </div>
-              <p className="text-ink/80 text-lg leading-relaxed">
-                {selectedItem.description}
+              <p className="text-ink/80 text-lg leading-relaxed mb-4">
+                {selectedItem.description || "Un plato legendario del gremio."}
               </p>
+              {selectedItem.chef && (
+                <p className="text-orange font-bold">
+                  Creado por: {selectedItem.chef}
+                </p>
+              )}
             </div>
           </div>
         </div>
