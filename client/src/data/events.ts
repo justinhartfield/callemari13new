@@ -713,14 +713,14 @@ export const events: Event[] = [
   },
 ];
 
-// Hall of Fame - Signature dishes
+// Hall of Fame - Signature dishes with actual food images from marti13.es
 export const hallOfFame: HallOfFameItem[] = [
   {
     id: "1",
     name: "Tortilla de Bar Pizcueta 14",
     date: "2024-02-02",
     eventTitle: "Aniversario y Pizcuetzario 14",
-    image: "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-02-at-15.44.02-e1706890597929-291x300.jpeg",
+    image: "http://marti13.es/wp-content/uploads/2024/01/Pizcueta-14-3-1024x680-1.jpg",
     chef: "Fede"
   },
   {
@@ -728,7 +728,7 @@ export const hallOfFame: HallOfFameItem[] = [
     name: "Texas Pulled Conejo",
     date: "2024-02-09",
     eventTitle: "Fede's Primero Hole-en-uno",
-    image: "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-09-at-15.28.07.jpeg",
+    image: "http://marti13.es/wp-content/uploads/2024/02/GAwDIFWXsAAZdTb.jpeg",
     chef: "Justin"
   },
   {
@@ -736,7 +736,7 @@ export const hallOfFame: HallOfFameItem[] = [
     name: "Chivito Estilo California",
     date: "2024-01-19",
     eventTitle: "Inaugural Almorzar",
-    image: "http://marti13.es/wp-content/uploads/2024/01/WhatsApp-Image-2024-01-19-at-16.08.58.jpeg",
+    image: "http://marti13.es/wp-content/uploads/2017/03/chivito_valenciano_NoticiaAmpliada.jpg",
     chef: "Justin"
   },
   {
@@ -744,7 +744,7 @@ export const hallOfFame: HallOfFameItem[] = [
     name: "Bocadillo Estilo Euskadi",
     date: "2024-01-26",
     eventTitle: "Molly arreglando su slice",
-    image: "http://marti13.es/wp-content/uploads/2024/01/WhatsApp-Image-2024-01-26-at-14.01.40.jpeg",
+    image: "http://marti13.es/wp-content/uploads/2024/01/bocadillo-de-anchoas-de-la-escala-foto-principal.webp",
     chef: "Molly"
   },
   {
@@ -752,23 +752,23 @@ export const hallOfFame: HallOfFameItem[] = [
     name: "Epicurus - Sardinas",
     date: "2024-02-16",
     eventTitle: "Cara con pneumonia",
-    image: "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-16-at-12.02.32.jpeg",
+    image: "http://marti13.es/wp-content/uploads/2024/02/download-1.jpg",
     chef: "Tyler"
   },
   {
     id: "6",
-    name: "Sushidillo de Tyler",
+    name: "Tang - Calabaza Asada",
     date: "2024-02-22",
     eventTitle: "Tyler hacen el sushidillo",
-    image: "http://marti13.es/wp-content/uploads/2024/02/PXL_20240223_112431833-scaled.jpg",
+    image: "http://marti13.es/wp-content/uploads/2024/02/long_french_bread_sandwhich_of_Calabaza_asada_salchicha_de_pavo_cebolla_asada_pinones_miel_de_limon_huevos_cocinado.png",
     chef: "Tyler"
   },
   {
     id: "7",
-    name: "Hamburguesas de Potro",
-    date: "2025-10-24",
-    eventTitle: "Vuelve al Potro",
-    image: "http://marti13.es/wp-content/uploads/2025/10/WhatsApp-Image-2025-10-24-at-13.59.27.jpeg",
+    name: "Melisa - Sobrasada",
+    date: "2024-03-08",
+    eventTitle: "Dia de las Mujeres",
+    image: "http://marti13.es/wp-content/uploads/2024/03/7jeMorcjS5ariAb2e9lanQ.png",
     chef: "Justin"
   },
   {
@@ -776,40 +776,40 @@ export const hallOfFame: HallOfFameItem[] = [
     name: "Tokio - Atún Picante",
     date: "2024-04-05",
     eventTitle: "Carlos Primera Almorzar",
-    image: "http://marti13.es/wp-content/uploads/2024/04/PXL_20240405_093205572-scaled.jpg",
+    image: "http://marti13.es/wp-content/uploads/2024/04/bocadillo_larga_pan_de_frances_Mayonesa_de_wasabi_pepino_aguacate_atun_picante_edamame.png",
     chef: "Tang"
   },
   {
     id: "9",
-    name: "Philly Cheesesteak",
-    date: "2025-05-09",
-    eventTitle: "Dia de Philadelphia Cheesesteak",
-    image: "http://marti13.es/wp-content/uploads/2025/05/WhatsApp-Image-2025-05-09-at-19.27.14-3.jpeg",
+    name: "Mafioso - Pollo Parma",
+    date: "2024-05-03",
+    eventTitle: "Corto en gente pero largo en diversión",
+    image: "http://marti13.es/wp-content/uploads/2024/05/make_a_long_french_bread_style_bocadillo_featuring_Baked_Chicken_Parm.png",
     chef: "Justin"
   },
   {
     id: "10",
-    name: "Albondigas IKEA",
-    date: "2025-05-23",
-    eventTitle: "Albondigas IKEA y Tex Mex",
-    image: "http://marti13.es/wp-content/uploads/2025/05/WhatsApp-Image-2025-05-23-at-13.37.24.jpeg",
+    name: "Calamares Siglo XIX",
+    date: "2024-05-24",
+    eventTitle: "Batalla de puntuación más alta",
+    image: "http://marti13.es/wp-content/uploads/2024/05/19th_century_calamari_dish_with_Tomate_pasas_pinones_cebolla_morada_aceitunas_alcaparras_Que_fantasia_png.png",
     chef: "Tyler"
   },
   {
     id: "11",
-    name: "Fish y Chips",
-    date: "2025-06-27",
-    eventTitle: "Verano y Se Marchan",
-    image: "http://marti13.es/wp-content/uploads/2025/06/WhatsApp-Image-2025-06-27-at-11.56.47.jpeg",
-    chef: "Justin"
+    name: "Rabbi Tyler - Salmón",
+    date: "2024-06-14",
+    eventTitle: "Mery Jane Berlin",
+    image: "http://marti13.es/wp-content/uploads/2024/09/Brown_Sugar_Salmon.jpeg",
+    chef: "Tyler"
   },
   {
     id: "12",
-    name: "Currywurst Alemana",
-    date: "2025-05-30",
-    eventTitle: "Don Perrito en la oficina",
-    image: "http://marti13.es/wp-content/uploads/2025/05/WhatsApp-Image-2025-05-30-at-12.51.42.jpeg",
-    chef: "Florian"
+    name: "Valenciano - Figatells",
+    date: "2024-06-28",
+    eventTitle: "Verano Empiezan",
+    image: "http://marti13.es/wp-content/uploads/2024/06/Figatells-1200x828-1.webp",
+    chef: "Justin"
   }
 ];
 
