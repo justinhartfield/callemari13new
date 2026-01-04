@@ -132,11 +132,21 @@ export async function seedDatabase() {
   const results = {
     events: 0,
     foodItems: 0,
-    chefs: 0
+    chefs: 0,
+    skipped: { events: 0, foodItems: 0, chefs: 0 }
   };
 
-  // Seed ALL events from static data
+  // Check if events already exist
+  const existingEvents = await db.select().from(events);
+  const existingEventDates = new Set(existingEvents.map(e => e.date));
+
+  // Seed ALL events from static data (skip duplicates by date)
   for (const event of staticEvents) {
+    // Skip if event with same date already exists
+    if (existingEventDates.has(event.date)) {
+      results.skipped.events++;
+      continue;
+    }
     try {
       await db.insert(events).values({
         title: event.title,
@@ -154,8 +164,16 @@ export async function seedDatabase() {
     }
   }
 
-  // Seed food items (all 120 items from marti13.es)
+  // Check if food items already exist
+  const existingFoodItems = await db.select().from(foodItems);
+  const existingFoodNames = new Set(existingFoodItems.map(f => f.name));
+
+  // Seed food items (all 120 items from marti13.es) - skip duplicates
   for (const item of allFoodItems) {
+    if (existingFoodNames.has(item.name)) {
+      results.skipped.foodItems++;
+      continue;
+    }
     try {
       await db.insert(foodItems).values({
         name: item.name,
@@ -172,8 +190,16 @@ export async function seedDatabase() {
     }
   }
 
-  // Seed chefs
+  // Check if chefs already exist
+  const existingChefs = await db.select().from(chefs);
+  const existingChefNames = new Set(existingChefs.map(c => c.name));
+
+  // Seed chefs - skip duplicates
   for (const chef of seedChefs) {
+    if (existingChefNames.has(chef.name)) {
+      results.skipped.chefs++;
+      continue;
+    }
     try {
       await db.insert(chefs).values({
         name: chef.name,
