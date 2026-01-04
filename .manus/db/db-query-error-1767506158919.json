@@ -1,0 +1,8 @@
+{
+  "query": "DELETE FROM events; DELETE FROM food_items; DELETE FROM chefs;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3t54wF1UiKubjpt.4313db2245a5 --database 2JVV4AGxA7XgJr8VUXSrJz --execute DELETE FROM events; DELETE FROM food_items; DELETE FROM chefs;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table '2jvv4agxa7xgjr8vuxsrjz.food_items' doesn't exist"
+  ]
+}

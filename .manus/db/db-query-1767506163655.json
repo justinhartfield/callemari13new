@@ -1,0 +1,28 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3t54wF1UiKubjpt.4313db2245a5 --database 2JVV4AGxA7XgJr8VUXSrJz --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_2JVV4AGxA7XgJr8VUXSrJz": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_2JVV4AGxA7XgJr8VUXSrJz": "chefs"
+    },
+    {
+      "Tables_in_2JVV4AGxA7XgJr8VUXSrJz": "events"
+    },
+    {
+      "Tables_in_2JVV4AGxA7XgJr8VUXSrJz": "foodItems"
+    },
+    {
+      "Tables_in_2JVV4AGxA7XgJr8VUXSrJz": "siteSettings"
+    },
+    {
+      "Tables_in_2JVV4AGxA7XgJr8VUXSrJz": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_2JVV4AGxA7XgJr8VUXSrJz\n__drizzle_migrations\nchefs\nevents\nfoodItems\nsiteSettings\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 44
+}
