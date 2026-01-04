@@ -9,6 +9,7 @@ import { events, foodItems, chefs } from "../drizzle/schema";
 // Import static events data
 import { events as staticEvents } from "../client/src/data/events";
 import { chefs as staticChefs } from "../client/src/data/chefs";
+import { allFoodItems } from "../client/src/data/allFoodItems";
 
 // Hall of Fame items with correct food images
 export const seedFoodItems = [
@@ -153,8 +154,8 @@ export async function seedDatabase() {
     }
   }
 
-  // Seed food items
-  for (const item of seedFoodItems) {
+  // Seed food items (all 120 items from marti13.es)
+  for (const item of allFoodItems) {
     try {
       await db.insert(foodItems).values({
         name: item.name,

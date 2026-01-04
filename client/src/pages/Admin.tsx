@@ -26,7 +26,9 @@ import {
   X,
   ChevronDown,
   ChevronUp,
-  Search
+  Search,
+  Home,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,13 +106,20 @@ export default function Admin() {
       {/* Main Content */}
       <main className="container py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-8 bg-cream border-4 border-ink">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-cream border-4 border-ink">
             <TabsTrigger 
               value="events" 
               className="flex items-center gap-2 data-[state=active]:bg-orange data-[state=active]:text-cream"
             >
               <Calendar size={18} />
               Eventos
+            </TabsTrigger>
+            <TabsTrigger 
+              value="homepage" 
+              className="flex items-center gap-2 data-[state=active]:bg-orange data-[state=active]:text-cream"
+            >
+              <Home size={18} />
+              Inicio
             </TabsTrigger>
             <TabsTrigger 
               value="food" 
@@ -137,6 +146,10 @@ export default function Admin() {
 
           <TabsContent value="events">
             <EventsManager />
+          </TabsContent>
+
+          <TabsContent value="homepage">
+            <HomepageManager />
           </TabsContent>
 
           <TabsContent value="food">
@@ -805,14 +818,14 @@ function FoodItemForm({
         <div className="space-y-2">
           <Label htmlFor="rank">Ranking</Label>
           <Select 
-            value={formData.rank?.toString() || ""} 
-            onValueChange={(value) => setFormData({ ...formData, rank: value ? parseInt(value) : null })}
+            value={formData.rank?.toString() || "none"} 
+            onValueChange={(value) => setFormData({ ...formData, rank: value && value !== 'none' ? parseInt(value) : null })}
           >
             <SelectTrigger className="border-2 border-ink">
               <SelectValue placeholder="Sin ranking" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sin ranking</SelectItem>
+              <SelectItem value="none">Sin ranking</SelectItem>
               <SelectItem value="1">#1</SelectItem>
               <SelectItem value="2">#2</SelectItem>
               <SelectItem value="3">#3</SelectItem>
@@ -1205,6 +1218,253 @@ function ChefForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+// Homepage Manager Component
+function HomepageManager() {
+  const [nextEventData, setNextEventData] = useState({
+    title: "",
+    date: "",
+    time: "12:00",
+    chef: "",
+    image: "",
+    menuPreview: [] as string[],
+    description: "",
+  });
+  const [menuInput, setMenuInput] = useState("");
+  const [useUrlInput, setUseUrlInput] = useState(false);
+
+  const { data: settings, refetch } = trpc.settings.get.useQuery({ key: "nextEvent" });
+
+  const updateSetting = trpc.settings.set.useMutation({
+    onSuccess: () => {
+      toast.success("Página de inicio actualizada correctamente");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Error al guardar: " + error.message);
+    }
+  });
+
+  useEffect(() => {
+    if (settings?.value) {
+      try {
+        const parsed = JSON.parse(settings.value);
+        setNextEventData({
+          title: parsed.title || "",
+          date: parsed.date || "",
+          time: parsed.time || "12:00",
+          chef: parsed.chef || "",
+          image: parsed.image || "",
+          menuPreview: parsed.menuPreview || [],
+          description: parsed.description || "",
+        });
+        setMenuInput((parsed.menuPreview || []).join("\n"));
+      } catch (e) {
+        // ignore parse errors
+      }
+    }
+  }, [settings]);
+
+  const handleSave = () => {
+    const menuItems = menuInput.split("\n").filter(item => item.trim());
+    updateSetting.mutate({
+      key: "nextEvent",
+      value: JSON.stringify({
+        ...nextEventData,
+        menuPreview: menuItems,
+      }),
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-ink">Editor de Página de Inicio</h2>
+        <p className="text-ink/70">Configura el contenido que aparece en la página principal</p>
+      </div>
+
+      {/* Next Event Countdown */}
+      <Card className="border-4 border-ink shadow-brutal">
+        <CardHeader className="bg-orange text-cream">
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            Próximo Almorzar (Countdown)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column - Event Details */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="eventTitle" className="font-bold">Título del Evento *</Label>
+                <Input
+                  id="eventTitle"
+                  value={nextEventData.title}
+                  onChange={(e) => setNextEventData({ ...nextEventData, title: e.target.value })}
+                  placeholder="ej: Almorzar de Reyes"
+                  className="border-2 border-ink"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="eventDate" className="font-bold">Fecha *</Label>
+                  <Input
+                    id="eventDate"
+                    type="date"
+                    value={nextEventData.date}
+                    onChange={(e) => setNextEventData({ ...nextEventData, date: e.target.value })}
+                    className="border-2 border-ink"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="eventTime" className="font-bold">Hora</Label>
+                  <Input
+                    id="eventTime"
+                    type="time"
+                    value={nextEventData.time}
+                    onChange={(e) => setNextEventData({ ...nextEventData, time: e.target.value })}
+                    className="border-2 border-ink"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="eventChef" className="font-bold">Chef del Día</Label>
+                <Input
+                  id="eventChef"
+                  value={nextEventData.chef}
+                  onChange={(e) => setNextEventData({ ...nextEventData, chef: e.target.value })}
+                  placeholder="ej: Justin"
+                  className="border-2 border-ink"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="eventDescription" className="font-bold">Descripción</Label>
+                <Textarea
+                  id="eventDescription"
+                  value={nextEventData.description}
+                  onChange={(e) => setNextEventData({ ...nextEventData, description: e.target.value })}
+                  placeholder="Descripción breve del próximo almorzar..."
+                  rows={3}
+                  className="border-2 border-ink"
+                />
+              </div>
+            </div>
+
+            {/* Right Column - Image & Menu */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="font-bold">Imagen de Vista Previa</Label>
+                  <button
+                    type="button"
+                    onClick={() => setUseUrlInput(!useUrlInput)}
+                    className="text-xs text-orange hover:underline"
+                  >
+                    {useUrlInput ? "Subir archivo" : "Usar URL"}
+                  </button>
+                </div>
+                {useUrlInput ? (
+                  <>
+                    <Input
+                      value={nextEventData.image}
+                      onChange={(e) => setNextEventData({ ...nextEventData, image: e.target.value })}
+                      placeholder="https://..."
+                      className="border-2 border-ink"
+                    />
+                    {nextEventData.image && (
+                      <img src={nextEventData.image} alt="Preview" className="w-full h-32 object-cover rounded border-2 border-ink mt-2" />
+                    )}
+                  </>
+                ) : (
+                  <ImageUpload
+                    value={nextEventData.image}
+                    onChange={(url) => setNextEventData({ ...nextEventData, image: url })}
+                    placeholder="Subir imagen del próximo almorzar"
+                  />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="menuPreview" className="font-bold">Menú Previsto (uno por línea)</Label>
+                <Textarea
+                  id="menuPreview"
+                  value={menuInput}
+                  onChange={(e) => setMenuInput(e.target.value)}
+                  placeholder="Tortilla de patatas&#10;Bocadillo especial&#10;Ensalada mixta"
+                  rows={5}
+                  className="border-2 border-ink"
+                />
+                <p className="text-xs text-ink/60">Estos platos aparecerán en la sección de countdown</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Preview */}
+          {(nextEventData.title || nextEventData.date) && (
+            <div className="border-t-2 border-ink pt-6">
+              <h4 className="font-bold text-ink mb-3">Vista Previa:</h4>
+              <div className="bg-ink text-cream p-4 rounded-lg">
+                <div className="flex items-start gap-4">
+                  {nextEventData.image && (
+                    <img src={nextEventData.image} alt="Preview" className="w-24 h-24 object-cover rounded border-2 border-orange" />
+                  )}
+                  <div>
+                    <h3 className="text-xl font-bold text-orange">{nextEventData.title || "Título del evento"}</h3>
+                    <p className="text-cream/70">
+                      {nextEventData.date ? new Date(nextEventData.date + "T" + nextEventData.time).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "Fecha"}
+                      {nextEventData.time && " a las " + nextEventData.time}
+                    </p>
+                    {nextEventData.chef && <p className="text-cream/70">Chef: {nextEventData.chef}</p>}
+                    {menuInput && (
+                      <div className="mt-2">
+                        <p className="text-xs text-cream/50 mb-1">Menú previsto:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {menuInput.split("\n").filter(m => m.trim()).slice(0, 4).map((item, i) => (
+                            <span key={i} className="text-xs bg-orange/20 text-orange px-2 py-0.5 rounded">{item}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleSave}
+              disabled={updateSetting.isPending}
+              className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink shadow-brutal"
+            >
+              <Save size={18} className="mr-2" />
+              {updateSetting.isPending ? "Guardando..." : "Guardar Cambios"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Tips */}
+      <Card className="border-2 border-ink">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5 text-orange" />
+            Consejos
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-ink/70 text-sm space-y-2">
+          <p>• El countdown aparecerá automáticamente en la página de inicio cuando configures un evento futuro.</p>
+          <p>• La imagen de vista previa se mostrará junto al countdown para dar un adelanto del próximo almorzar.</p>
+          <p>• El menú previsto ayuda a los miembros a saber qué esperar del próximo evento.</p>
+          <p>• Una vez pasada la fecha, el countdown desaparecerá automáticamente.</p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

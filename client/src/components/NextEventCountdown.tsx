@@ -1,11 +1,13 @@
 /**
  * DESIGN: Neo-Brutalist "Zine Bodega"
  * Próximo Evento countdown component with live timer
+ * Now fetches data from database settings
  */
 
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Calendar, Clock, MapPin, ChefHat, ArrowRight } from "lucide-react";
+import { Calendar, Clock, MapPin, ChefHat, ArrowRight, UtensilsCrossed } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 interface TimeLeft {
   days: number;
@@ -14,18 +16,29 @@ interface TimeLeft {
   seconds: number;
 }
 
-// Next scheduled event - update this for each new almorzar
-const nextEvent = {
-  title: "Almorzar de Reyes",
-  date: "2026-01-10T12:00:00", // Friday January 10, 2026 at noon
-  chef: "Justin",
-  location: "Martí 13, Valencia",
-  description: "Primer almorzar del año nuevo. Empezamos el 2026 con fuerza.",
-  image: "http://marti13.es/wp-content/uploads/2025/01/WhatsApp-Image-2025-01-10-at-16.39.28-2.jpeg"
+interface NextEventData {
+  title: string;
+  date: string;
+  time: string;
+  chef: string;
+  image?: string;
+  menuPreview?: string[];
+  description?: string;
+}
+
+// Fallback event if no database settings
+const fallbackEvent: NextEventData = {
+  title: "Próximo Almorzar",
+  date: "2026-01-10",
+  time: "12:00",
+  chef: "TBD",
+  description: "Detalles próximamente...",
+  image: "/images/hero-almorzar.jpg"
 };
 
-function calculateTimeLeft(targetDate: string): TimeLeft | null {
-  const difference = new Date(targetDate).getTime() - new Date().getTime();
+function calculateTimeLeft(date: string, time: string): TimeLeft | null {
+  const targetDate = new Date(`${date}T${time}:00`);
+  const difference = targetDate.getTime() - new Date().getTime();
   
   if (difference <= 0) {
     return null;
@@ -40,7 +53,7 @@ function calculateTimeLeft(targetDate: string): TimeLeft | null {
 }
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = new Date(dateString + "T12:00:00");
   const options: Intl.DateTimeFormatOptions = {
     weekday: 'long',
     day: 'numeric',
@@ -50,21 +63,46 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('es-ES', options);
 }
 
-function formatTime(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-}
-
 export default function NextEventCountdown() {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(calculateTimeLeft(nextEvent.date));
+  const [eventData, setEventData] = useState<NextEventData>(fallbackEvent);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   
+  // Fetch settings from database
+  const { data: settings } = trpc.settings.get.useQuery({ key: "nextEvent" });
+  
+  // Parse settings when they load
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(nextEvent.date));
-    }, 1000);
+    if (settings?.value) {
+      try {
+        const parsed = JSON.parse(settings.value);
+        if (parsed.title && parsed.date) {
+          setEventData({
+            title: parsed.title,
+            date: parsed.date,
+            time: parsed.time || "12:00",
+            chef: parsed.chef || "TBD",
+            image: parsed.image || fallbackEvent.image,
+            menuPreview: parsed.menuPreview || [],
+            description: parsed.description || "",
+          });
+        }
+      } catch (e) {
+        // Use fallback on parse error
+      }
+    }
+  }, [settings]);
+  
+  // Update countdown timer
+  useEffect(() => {
+    const updateTimer = () => {
+      setTimeLeft(calculateTimeLeft(eventData.date, eventData.time));
+    };
+    
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
     
     return () => clearInterval(timer);
-  }, []);
+  }, [eventData.date, eventData.time]);
   
   // If event has passed, don't show the countdown
   if (!timeLeft) {
@@ -74,14 +112,16 @@ export default function NextEventCountdown() {
   return (
     <section className="py-12 md:py-16 bg-ink relative overflow-hidden">
       {/* Background pattern */}
-      <div 
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `url("${nextEvent.image}")`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      />
+      {eventData.image && (
+        <div 
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `url("${eventData.image}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+      )}
       <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/95 to-ink/80" />
       
       <div className="container relative z-10">
@@ -93,32 +133,67 @@ export default function NextEventCountdown() {
             </div>
             
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-cream mb-4">
-              {nextEvent.title}
+              {eventData.title}
             </h2>
             
-            <p className="text-cream/70 text-lg mb-6 max-w-lg">
-              {nextEvent.description}
-            </p>
+            {eventData.description && (
+              <p className="text-cream/70 text-lg mb-6 max-w-lg">
+                {eventData.description}
+              </p>
+            )}
             
             {/* Event details */}
-            <div className="space-y-3 mb-8">
+            <div className="space-y-3 mb-6">
               <div className="flex items-center gap-3 text-cream/80">
                 <Calendar className="w-5 h-5 text-orange" />
-                <span className="capitalize">{formatDate(nextEvent.date)}</span>
+                <span className="capitalize">{formatDate(eventData.date)}</span>
               </div>
               <div className="flex items-center gap-3 text-cream/80">
                 <Clock className="w-5 h-5 text-orange" />
-                <span>{formatTime(nextEvent.date)}</span>
+                <span>{eventData.time}</span>
               </div>
               <div className="flex items-center gap-3 text-cream/80">
                 <MapPin className="w-5 h-5 text-orange" />
-                <span>{nextEvent.location}</span>
+                <span>Martí 13, Valencia</span>
               </div>
-              <div className="flex items-center gap-3 text-cream/80">
-                <ChefHat className="w-5 h-5 text-orange" />
-                <span>Chef: {nextEvent.chef}</span>
-              </div>
+              {eventData.chef && eventData.chef !== "TBD" && (
+                <div className="flex items-center gap-3 text-cream/80">
+                  <ChefHat className="w-5 h-5 text-orange" />
+                  <span>Chef: {eventData.chef}</span>
+                </div>
+              )}
             </div>
+            
+            {/* Menu Preview */}
+            {eventData.menuPreview && eventData.menuPreview.length > 0 && (
+              <div className="mb-8 p-4 bg-cream/10 border-2 border-cream/20 rounded-lg">
+                <div className="flex items-center gap-2 text-orange mb-3">
+                  <UtensilsCrossed className="w-4 h-4" />
+                  <span className="font-bold text-sm uppercase">Menú Previsto</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {eventData.menuPreview.map((item, i) => (
+                    <span 
+                      key={i} 
+                      className="text-sm bg-orange/20 text-cream px-3 py-1 rounded-full border border-orange/30"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Event image thumbnail */}
+            {eventData.image && (
+              <div className="mb-8 hidden md:block">
+                <img 
+                  src={eventData.image} 
+                  alt={eventData.title}
+                  className="w-48 h-32 object-cover rounded-lg border-4 border-cream/20 shadow-brutal"
+                />
+              </div>
+            )}
             
             <Link 
               href="/eventos"
