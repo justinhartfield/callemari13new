@@ -12,7 +12,6 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
-import Menu from "./pages/Menu";
 import HallOfFame from "./pages/HallOfFame";
 import About from "./pages/About";
 import Chefs from "./pages/Chefs";
@@ -23,7 +22,6 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/eventos" component={Events} />
       <Route path="/evento/:id" component={EventDetail} />
-      <Route path="/menu" component={Menu} />
       <Route path="/hall-of-fame" component={HallOfFame} />
       <Route path="/nosotros" component={About} />
       <Route path="/cocineros" component={Chefs} />

@@ -32,7 +32,6 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/" className="text-cream/80 hover:text-orange transition-colors">Inicio</Link></li>
               <li><Link href="/eventos" className="text-cream/80 hover:text-orange transition-colors">Eventos</Link></li>
-              <li><Link href="/menu" className="text-cream/80 hover:text-orange transition-colors">Menú</Link></li>
               <li><Link href="/hall-of-fame" className="text-cream/80 hover:text-orange transition-colors">Hall of Fame</Link></li>
               <li><Link href="/nosotros" className="text-cream/80 hover:text-orange transition-colors">Nosotros</Link></li>
             </ul>

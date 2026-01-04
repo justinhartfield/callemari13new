@@ -28,6 +28,15 @@ export interface HallOfFameItem {
 // Sorted chronologically: most recent first, inaugural event last
 export const events: Event[] = [
   {
+    id: "0",
+    title: "2/1 Arranca el año nuevo con estilo",
+    date: "2026-01-02",
+    image: "http://marti13.es/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-19-at-12.14.13.jpeg",
+    description: "Arranca el año nuevo con estilo - El primer almorzar de 2026 con atún con aceitunas, torreznos y patatas fritas estilo criss cut.",
+    menuItems: ["Atún con aceitunas", "Torreznos", "Patatas fritos estilo criss cut"],
+    gallery: []
+  },
+  {
     id: "1",
     title: "19/12 Lo final del año !",
     date: "2025-12-19",

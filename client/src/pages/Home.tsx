@@ -259,8 +259,8 @@ export default function Home() {
                 ))}
               </div>
 
-              <Link href="/menu" className="brutal-btn inline-flex items-center gap-2">
-                Ver Menú Completo
+              <Link href="/hall-of-fame" className="brutal-btn inline-flex items-center gap-2">
+                Ver Hall of Fame
                 <ArrowRight size={18} />
               </Link>
             </div>
