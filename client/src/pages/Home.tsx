@@ -17,6 +17,7 @@ import MarketTicker from "@/components/MarketTicker";
 import EventCard from "@/components/EventCard";
 import HallOfFameCard from "@/components/HallOfFameCard";
 import { events, hallOfFame } from "@/data/events";
+import NextEventCountdown from "@/components/NextEventCountdown";
 
 export default function Home() {
   const featuredEvents = events.slice(0, 4);
@@ -79,6 +80,9 @@ export default function Home() {
 
       {/* Market Ticker */}
       <MarketTicker />
+
+      {/* Next Event Countdown */}
+      <NextEventCountdown />
 
       {/* Stats Section */}
       <section className="py-12 md:py-16 bg-cream border-b-4 border-ink">
