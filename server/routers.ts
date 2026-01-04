@@ -7,6 +7,7 @@ import { eq, desc } from "drizzle-orm";
 import { getDb } from "./db";
 import { events, foodItems, chefs, siteSettings } from "../drizzle/schema";
 import { seedDatabase } from "./seed";
+import { storagePut } from "./storage";
 
 // Events Router
 const eventsRouter = router({
@@ -230,6 +231,30 @@ const chefsRouter = router({
     }),
 });
 
+// Upload Router
+const uploadRouter = router({
+  image: publicProcedure
+    .input(z.object({
+      filename: z.string(),
+      data: z.string(), // base64 encoded
+      contentType: z.string().default("image/jpeg"),
+    }))
+    .mutation(async ({ input }) => {
+      // Decode base64 data
+      const buffer = Buffer.from(input.data, "base64");
+      
+      // Generate unique filename with timestamp
+      const timestamp = Date.now();
+      const ext = input.filename.split(".").pop() || "jpg";
+      const uniqueFilename = `uploads/${timestamp}-${input.filename.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      
+      // Upload to S3
+      const result = await storagePut(uniqueFilename, buffer, input.contentType);
+      
+      return { url: result.url, key: result.key };
+    }),
+});
+
 // Settings Router
 const settingsRouter = router({
   get: publicProcedure
@@ -292,6 +317,7 @@ export const appRouter = router({
   foodItems: foodItemsRouter,
   chefs: chefsRouter,
   settings: settingsRouter,
+  upload: uploadRouter,
 });
 
 export type AppRouter = typeof appRouter;

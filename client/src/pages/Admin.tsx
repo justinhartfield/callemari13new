@@ -38,6 +38,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { ImageUpload, GalleryUpload } from "@/components/ImageUpload";
 
 const ADMIN_CODE = "420";
 
@@ -417,15 +418,16 @@ function EventForm({
     image: initialData?.image || "",
     chef: initialData?.chef || "",
     menuItems: initialData?.menuItems?.join("\n") || "",
-    gallery: initialData?.gallery?.join("\n") || "",
+    gallery: initialData?.gallery || [],
   });
+  const [useUrlInput, setUseUrlInput] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       ...formData,
       menuItems: formData.menuItems.split("\n").filter((item: string) => item.trim()),
-      gallery: formData.gallery.split("\n").filter((url: string) => url.trim()),
+      gallery: Array.isArray(formData.gallery) ? formData.gallery : [],
     });
   };
 
@@ -480,16 +482,34 @@ function EventForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">URL de Imagen Principal</Label>
-        <Input
-          id="image"
-          value={formData.image}
-          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-          placeholder="https://..."
-          className="border-2 border-ink"
-        />
-        {formData.image && (
-          <img src={formData.image} alt="Preview" className="w-32 h-32 object-cover rounded border-2 border-ink mt-2" />
+        <div className="flex items-center justify-between">
+          <Label>Imagen Principal</Label>
+          <button
+            type="button"
+            onClick={() => setUseUrlInput(!useUrlInput)}
+            className="text-xs text-orange hover:underline"
+          >
+            {useUrlInput ? "Subir archivo" : "Usar URL"}
+          </button>
+        </div>
+        {useUrlInput ? (
+          <>
+            <Input
+              value={formData.image}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              placeholder="https://..."
+              className="border-2 border-ink"
+            />
+            {formData.image && (
+              <img src={formData.image} alt="Preview" className="w-32 h-32 object-cover rounded border-2 border-ink mt-2" />
+            )}
+          </>
+        ) : (
+          <ImageUpload
+            value={formData.image}
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            placeholder="Arrastra o haz clic para subir imagen principal"
+          />
         )}
       </div>
 
@@ -506,14 +526,11 @@ function EventForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="gallery">Galería de Fotos (URLs, una por línea)</Label>
-        <Textarea
-          id="gallery"
-          value={formData.gallery}
-          onChange={(e) => setFormData({ ...formData, gallery: e.target.value })}
-          placeholder="https://...&#10;https://...&#10;https://..."
-          rows={3}
-          className="border-2 border-ink"
+        <Label>Galería de Fotos</Label>
+        <GalleryUpload
+          value={Array.isArray(formData.gallery) ? formData.gallery : []}
+          onChange={(urls) => setFormData({ ...formData, gallery: urls })}
+          maxImages={12}
         />
       </div>
 
@@ -750,6 +767,7 @@ function FoodItemForm({
     chef: initialData?.chef || "",
     rank: initialData?.rank || null,
   });
+  const [useUrlInput, setUseUrlInput] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -827,16 +845,34 @@ function FoodItemForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">URL de Imagen</Label>
-        <Input
-          id="image"
-          value={formData.image}
-          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-          placeholder="https://..."
-          className="border-2 border-ink"
-        />
-        {formData.image && (
-          <img src={formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border-2 border-ink mt-2" />
+        <div className="flex items-center justify-between">
+          <Label>Imagen del Plato</Label>
+          <button
+            type="button"
+            onClick={() => setUseUrlInput(!useUrlInput)}
+            className="text-xs text-orange hover:underline"
+          >
+            {useUrlInput ? "Subir archivo" : "Usar URL"}
+          </button>
+        </div>
+        {useUrlInput ? (
+          <>
+            <Input
+              value={formData.image}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              placeholder="https://..."
+              className="border-2 border-ink"
+            />
+            {formData.image && (
+              <img src={formData.image} alt="Preview" className="w-24 h-24 object-cover rounded border-2 border-ink mt-2" />
+            )}
+          </>
+        ) : (
+          <ImageUpload
+            value={formData.image}
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            placeholder="Arrastra o haz clic para subir imagen"
+          />
         )}
       </div>
 
@@ -1033,6 +1069,7 @@ function ChefForm({
     eventsHosted: initialData?.eventsHosted || 0,
     dishesCreated: initialData?.dishesCreated || 0,
   });
+  const [useUrlInput, setUseUrlInput] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1094,14 +1131,35 @@ function ChefForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="avatar">URL de Avatar</Label>
-        <Input
-          id="avatar"
-          value={formData.avatar}
-          onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-          placeholder="https://..."
-          className="border-2 border-ink"
-        />
+        <div className="flex items-center justify-between">
+          <Label>Avatar del Cocinero</Label>
+          <button
+            type="button"
+            onClick={() => setUseUrlInput(!useUrlInput)}
+            className="text-xs text-orange hover:underline"
+          >
+            {useUrlInput ? "Subir archivo" : "Usar URL"}
+          </button>
+        </div>
+        {useUrlInput ? (
+          <>
+            <Input
+              value={formData.avatar}
+              onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
+              placeholder="https://..."
+              className="border-2 border-ink"
+            />
+            {formData.avatar && (
+              <img src={formData.avatar} alt="Preview" className="w-16 h-16 object-cover rounded-full border-2 border-ink mt-2" />
+            )}
+          </>
+        ) : (
+          <ImageUpload
+            value={formData.avatar}
+            onChange={(url) => setFormData({ ...formData, avatar: url })}
+            placeholder="Subir foto del cocinero"
+          />
+        )}
       </div>
 
       <div className="space-y-2">
