@@ -289,7 +289,7 @@ const ideogramRouter = router({
           },
           body: JSON.stringify({
             prompt,
-            aspect_ratio: "16:9",
+            aspect_ratio: "16x9",
             rendering_speed: "DEFAULT",
             magic_prompt: "AUTO",
             num_images: 1,
