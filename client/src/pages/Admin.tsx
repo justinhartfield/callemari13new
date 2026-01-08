@@ -1223,7 +1223,7 @@ function ChefForm({
   );
 }
 
-// AI Image Generator Component
+// AI Image Generator Component - v2 force rebuild
 function AIImageGenerator({ 
   title, 
   menuItems, 
