@@ -8,6 +8,10 @@ import { getDb } from "./db";
 import { events, foodItems, chefs, siteSettings } from "../drizzle/schema";
 import { seedDatabase } from "./seed";
 import { storagePut } from "./storage";
+import { ENV } from "./_core/env";
+
+// Ideogram API configuration
+const IDEOGRAM_API_URL = "https://api.ideogram.ai/v1/ideogram-v3/generate";
 
 // Events Router
 const eventsRouter = router({
@@ -255,6 +259,80 @@ const uploadRouter = router({
     }),
 });
 
+// Ideogram Image Generation Router
+const ideogramRouter = router({
+  generate: publicProcedure
+    .input(z.object({
+      title: z.string().min(1),
+      menuItems: z.array(z.string()).optional(),
+      chef: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      if (!ENV.ideogramApiKey) {
+        throw new Error("Ideogram API key not configured. Set IDEOGRAM_API_KEY environment variable.");
+      }
+
+      // Build a food-focused prompt from the event data
+      const menuText = input.menuItems?.length 
+        ? input.menuItems.slice(0, 4).join(", ")
+        : "traditional Spanish almorzar";
+      
+      const prompt = `Professional food photography of a Spanish almorzar feast featuring ${menuText}. Rustic wooden table setting, warm Mediterranean lighting, Valencia Spain style, appetizing presentation, high-end restaurant quality, editorial food photography, shallow depth of field, natural lighting from window. Title: "${input.title}". Style: warm, inviting, authentic Spanish cuisine.`;
+
+      try {
+        // Call Ideogram API
+        const response = await fetch(IDEOGRAM_API_URL, {
+          method: "POST",
+          headers: {
+            "Api-Key": ENV.ideogramApiKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            prompt,
+            aspect_ratio: "16:9",
+            rendering_speed: "DEFAULT",
+            magic_prompt: "AUTO",
+            num_images: 1,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Ideogram API error: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        
+        // Get the generated image URL
+        const imageUrl = data.data?.[0]?.url;
+        if (!imageUrl) {
+          throw new Error("No image URL in Ideogram response");
+        }
+
+        // Download the image from Ideogram
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error("Failed to download generated image");
+        }
+        const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+
+        // Upload to our storage
+        const timestamp = Date.now();
+        const filename = `generated/image-of-week-${timestamp}.jpg`;
+        const uploadResult = await storagePut(filename, imageBuffer, "image/jpeg");
+
+        return {
+          success: true,
+          imageUrl: uploadResult.url,
+          prompt,
+        };
+      } catch (error) {
+        console.error("Ideogram generation error:", error);
+        throw error;
+      }
+    }),
+});
+
 // Settings Router
 const settingsRouter = router({
   get: publicProcedure
@@ -318,6 +396,7 @@ export const appRouter = router({
   chefs: chefsRouter,
   settings: settingsRouter,
   upload: uploadRouter,
+  ideogram: ideogramRouter,
 });
 
 export type AppRouter = typeof appRouter;

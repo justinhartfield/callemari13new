@@ -28,7 +28,9 @@ import {
   ChevronUp,
   Search,
   Home,
-  Clock
+  Clock,
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1221,6 +1223,80 @@ function ChefForm({
   );
 }
 
+// AI Image Generator Component
+function AIImageGenerator({ 
+  title, 
+  menuItems, 
+  chef,
+  onImageGenerated 
+}: { 
+  title: string;
+  menuItems: string[];
+  chef: string;
+  onImageGenerated: (url: string) => void;
+}) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [lastPrompt, setLastPrompt] = useState("");
+
+  const generateMutation = trpc.ideogram.generate.useMutation({
+    onSuccess: (data) => {
+      onImageGenerated(data.imageUrl);
+      setLastPrompt(data.prompt);
+      toast.success("¡Imagen generada con éxito!");
+      setIsGenerating(false);
+    },
+    onError: (error) => {
+      toast.error("Error al generar imagen: " + error.message);
+      setIsGenerating(false);
+    }
+  });
+
+  const handleGenerate = () => {
+    if (!title.trim()) {
+      toast.error("Por favor, introduce un título para el evento");
+      return;
+    }
+    setIsGenerating(true);
+    generateMutation.mutate({
+      title,
+      menuItems: menuItems.length > 0 ? menuItems : undefined,
+      chef: chef || undefined,
+    });
+  };
+
+  return (
+    <div className="space-y-2 pt-2">
+      <Button
+        type="button"
+        onClick={handleGenerate}
+        disabled={isGenerating || !title.trim()}
+        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold border-2 border-ink shadow-brutal"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 size={18} className="mr-2 animate-spin" />
+            Generando con IA...
+          </>
+        ) : (
+          <>
+            <Sparkles size={18} className="mr-2" />
+            Generar Imagen de la Semana con IA
+          </>
+        )}
+      </Button>
+      <p className="text-xs text-ink/60 text-center">
+        Genera automáticamente una imagen basada en el título y menú del evento
+      </p>
+      {lastPrompt && (
+        <details className="text-xs text-ink/50">
+          <summary className="cursor-pointer hover:text-ink/70">Ver prompt utilizado</summary>
+          <p className="mt-1 p-2 bg-ink/5 rounded text-xs">{lastPrompt}</p>
+        </details>
+      )}
+    </div>
+  );
+}
+
 // Homepage Manager Component
 function HomepageManager() {
   const [nextEventData, setNextEventData] = useState({
@@ -1387,6 +1463,14 @@ function HomepageManager() {
                     placeholder="Subir imagen del próximo almorzar"
                   />
                 )}
+                
+                {/* AI Image Generation Button */}
+                <AIImageGenerator 
+                  title={nextEventData.title}
+                  menuItems={menuInput.split("\n").filter(m => m.trim())}
+                  chef={nextEventData.chef}
+                  onImageGenerated={(url) => setNextEventData({ ...nextEventData, image: url })}
+                />
               </div>
 
               <div className="space-y-2">
