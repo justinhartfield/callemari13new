@@ -8,4 +8,8 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   ideogramApiKey: process.env.IDEOGRAM_API_KEY ?? "",
+  // Bunny.net Storage
+  bunnyStorageZone: process.env.BUNNY_STORAGE_ZONE ?? "",
+  bunnyStorageApiKey: process.env.BUNNY_STORAGE_API_KEY ?? "",
+  bunnyCdnUrl: process.env.BUNNY_CDN_URL ?? "",
 };

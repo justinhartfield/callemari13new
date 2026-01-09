@@ -316,14 +316,37 @@ const ideogramRouter = router({
         }
         const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
 
-        // Upload to our storage
+        // Upload to Bunny.net storage
         const timestamp = Date.now();
         const filename = `generated/image-of-week-${timestamp}.jpg`;
-        const uploadResult = await storagePut(filename, imageBuffer, "image/jpeg");
+        
+        // Check Bunny.net credentials
+        if (!ENV.bunnyStorageZone || !ENV.bunnyStorageApiKey || !ENV.bunnyCdnUrl) {
+          throw new Error("Bunny.net storage not configured. Set BUNNY_STORAGE_ZONE, BUNNY_STORAGE_API_KEY, and BUNNY_CDN_URL environment variables.");
+        }
+        
+        // Upload to Bunny.net Storage
+        const bunnyUploadUrl = `https://storage.bunnycdn.com/${ENV.bunnyStorageZone}/${filename}`;
+        const uploadResponse = await fetch(bunnyUploadUrl, {
+          method: "PUT",
+          headers: {
+            "AccessKey": ENV.bunnyStorageApiKey,
+            "Content-Type": "image/jpeg",
+          },
+          body: imageBuffer,
+        });
+        
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text();
+          throw new Error(`Bunny.net upload failed: ${uploadResponse.status} - ${errorText}`);
+        }
+        
+        // Return the CDN URL
+        const cdnUrl = `${ENV.bunnyCdnUrl.replace(/\/$/, '')}/${filename}`;
 
         return {
           success: true,
-          imageUrl: uploadResult.url,
+          imageUrl: cdnUrl,
           prompt,
         };
       } catch (error) {
