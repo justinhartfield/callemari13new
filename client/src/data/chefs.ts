@@ -172,28 +172,6 @@ export const chefs: Chef[] = [
       }
     ],
     funFact: "Su primera almorzar fue un éxito rotundo"
-  },
-  {
-    id: "7",
-    name: "Nero",
-    nickname: "El Artista",
-    avatar: "https://images.unsplash.com/photo-1512485694743-9c9538b4e6e0?w=400",
-    bio: "El más experimental del grupo. Nero trata cada plato como una obra de arte, combinando sabores inesperados con presentaciones impresionantes.",
-    specialty: "Cocina de Autor Experimental",
-    stats: {
-      eventsCooked: 10,
-      signatureDishes: 14,
-      hallOfFameEntries: 0
-    },
-    signatureDishes: [
-      {
-        name: "NERO: Creación Especial",
-        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/06/Nero_special_artistic_gourmet_sandwich.png",
-        description: "Cada semana una sorpresa diferente"
-      }
-    ],
-    funFact: "Nunca repite el mismo plato dos veces"
-  }
 ];
 
 // Calculate total stats

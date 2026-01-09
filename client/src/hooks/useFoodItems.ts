@@ -1,8 +1,7 @@
 /**
- * Hook to fetch food items from the database
+ * Hook to fetch food items - now uses static data
  */
-
-import { trpc } from "@/lib/trpc";
+import { allFoodItems } from "@/data/allFoodItems";
 
 export interface FoodItem {
   id: number;
@@ -16,27 +15,32 @@ export interface FoodItem {
 }
 
 export function useFoodItems() {
-  const { data: dbItems, isLoading, error } = trpc.foodItems.list.useQuery();
-
-  const foodItems: FoodItem[] = dbItems 
-    ? dbItems.map(item => ({
-        ...item,
-      }))
-    : [];
+  // Use static data instead of database
+  const foodItems: FoodItem[] = allFoodItems.map((item, index) => ({
+    id: index + 1,
+    name: item.name,
+    description: item.description || null,
+    image: item.image || null,
+    chef: item.chef || null,
+    category: item.category || null,
+    rank: item.rank || null,
+    isPublished: true,
+  }));
 
   return {
     foodItems,
-    isLoading,
-    error,
+    isLoading: false,
+    error: null,
   };
 }
 
 export function useFoodItem(id: number) {
-  const { data: dbItem, isLoading, error } = trpc.foodItems.get.useQuery({ id });
-
+  const { foodItems } = useFoodItems();
+  const foodItem = foodItems.find(item => item.id === id) || null;
+  
   return {
-    foodItem: dbItem || null,
-    isLoading,
-    error,
+    foodItem,
+    isLoading: false,
+    error: null,
   };
 }
