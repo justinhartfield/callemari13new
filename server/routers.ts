@@ -261,6 +261,129 @@ const uploadRouter = router({
 
 // Ideogram Image Generation Router
 const ideogramRouter = router({
+  // Generate multiple images - one per menu item (up to 4)
+  generateMultiple: publicProcedure
+    .input(z.object({
+      title: z.string().min(1),
+      menuItems: z.array(z.string()),
+      chef: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      if (!ENV.ideogramApiKey) {
+        throw new Error("Ideogram API key not configured. Set IDEOGRAM_API_KEY environment variable.");
+      }
+      
+      // Check Bunny.net credentials
+      if (!ENV.bunnyStorageZone || !ENV.bunnyStorageApiKey || !ENV.bunnyCdnUrl) {
+        throw new Error("Bunny.net storage not configured. Set BUNNY_STORAGE_ZONE, BUNNY_STORAGE_API_KEY, and BUNNY_CDN_URL environment variables.");
+      }
+
+      // Take up to 4 menu items
+      const itemsToGenerate = input.menuItems.slice(0, 4);
+      if (itemsToGenerate.length === 0) {
+        throw new Error("Please add at least one menu item to generate images");
+      }
+
+      const results: { menuItem: string; imageUrl: string; prompt: string }[] = [];
+      const timestamp = Date.now();
+
+      // Generate one image per menu item
+      for (let i = 0; i < itemsToGenerate.length; i++) {
+        const menuItem = itemsToGenerate[i];
+        
+        // Build a food-focused prompt for this specific dish
+        const prompt = `Professional food photography of ${menuItem}, Spanish almorzar style. Single dish hero shot, rustic wooden table, warm Mediterranean lighting, Valencia Spain aesthetic, appetizing presentation, high-end restaurant quality, editorial food photography, shallow depth of field, natural lighting. Style: warm, inviting, authentic Spanish cuisine.`;
+
+        try {
+          // Call Ideogram API
+          const response = await fetch(IDEOGRAM_API_URL, {
+            method: "POST",
+            headers: {
+              "Api-Key": ENV.ideogramApiKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              prompt,
+              aspect_ratio: "1x1",
+              rendering_speed: "DEFAULT",
+              magic_prompt: "AUTO",
+              num_images: 1,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Ideogram API error for ${menuItem}: ${response.status} - ${errorText}`);
+            continue; // Skip this item but continue with others
+          }
+
+          const data = await response.json();
+          
+          // Get the generated image URL
+          const imageUrl = data.data?.[0]?.url;
+          if (!imageUrl) {
+            console.error(`No image URL for ${menuItem}`);
+            continue;
+          }
+
+          // Download the image from Ideogram
+          const imageResponse = await fetch(imageUrl);
+          if (!imageResponse.ok) {
+            console.error(`Failed to download image for ${menuItem}`);
+            continue;
+          }
+          const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+
+          // Create a safe filename from the menu item
+          const safeFilename = menuItem
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '')
+            .substring(0, 30);
+          const filename = `generated/menu-${timestamp}-${i}-${safeFilename}.jpg`;
+          
+          // Upload to Bunny.net Storage
+          const bunnyUploadUrl = `https://storage.bunnycdn.com/${ENV.bunnyStorageZone}/${filename}`;
+          const uploadResponse = await fetch(bunnyUploadUrl, {
+            method: "PUT",
+            headers: {
+              "AccessKey": ENV.bunnyStorageApiKey,
+              "Content-Type": "image/jpeg",
+            },
+            body: imageBuffer,
+          });
+          
+          if (!uploadResponse.ok) {
+            const errorText = await uploadResponse.text();
+            console.error(`Bunny.net upload failed for ${menuItem}: ${uploadResponse.status} - ${errorText}`);
+            continue;
+          }
+          
+          // Add to results
+          const cdnUrl = `${ENV.bunnyCdnUrl.replace(/\/$/, '')}/${filename}`;
+          results.push({
+            menuItem,
+            imageUrl: cdnUrl,
+            prompt,
+          });
+        } catch (error) {
+          console.error(`Error generating image for ${menuItem}:`, error);
+          continue;
+        }
+      }
+
+      if (results.length === 0) {
+        throw new Error("Failed to generate any images. Please try again.");
+      }
+
+      return {
+        success: true,
+        images: results,
+        count: results.length,
+      };
+    }),
+
+  // Keep the single image generation for backward compatibility
   generate: publicProcedure
     .input(z.object({
       title: z.string().min(1),

@@ -43,6 +43,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { ImageUpload, GalleryUpload } from "@/components/ImageUpload";
+import { AIImageGenerator } from "@/components/AIImageGenerator";
 
 const ADMIN_CODE = "420";
 
@@ -1223,81 +1224,12 @@ function ChefForm({
   );
 }
 
-// AI Image Generator Component - v2 force rebuild
-function AIImageGenerator({ 
-  title, 
-  menuItems, 
-  chef,
-  onImageGenerated 
-}: { 
-  title: string;
-  menuItems: string[];
-  chef: string;
-  onImageGenerated: (url: string) => void;
-}) {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [lastPrompt, setLastPrompt] = useState("");
-
-  const generateMutation = trpc.ideogram.generate.useMutation({
-    onSuccess: (data) => {
-      onImageGenerated(data.imageUrl);
-      setLastPrompt(data.prompt);
-      toast.success("¡Imagen generada con éxito!");
-      setIsGenerating(false);
-    },
-    onError: (error) => {
-      toast.error("Error al generar imagen: " + error.message);
-      setIsGenerating(false);
-    }
-  });
-
-  const handleGenerate = () => {
-    if (!title.trim()) {
-      toast.error("Por favor, introduce un título para el evento");
-      return;
-    }
-    setIsGenerating(true);
-    generateMutation.mutate({
-      title,
-      menuItems: menuItems.length > 0 ? menuItems : undefined,
-      chef: chef || undefined,
-    });
-  };
-
-  return (
-    <div className="space-y-2 pt-2">
-      <Button
-        type="button"
-        onClick={handleGenerate}
-        disabled={isGenerating || !title.trim()}
-        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold border-2 border-ink shadow-brutal"
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 size={18} className="mr-2 animate-spin" />
-            Generando con IA...
-          </>
-        ) : (
-          <>
-            <Sparkles size={18} className="mr-2" />
-            Generar Imagen de la Semana con IA
-          </>
-        )}
-      </Button>
-      <p className="text-xs text-ink/60 text-center">
-        Genera automáticamente una imagen basada en el título y menú del evento
-      </p>
-      {lastPrompt && (
-        <details className="text-xs text-ink/50">
-          <summary className="cursor-pointer hover:text-ink/70">Ver prompt utilizado</summary>
-          <p className="mt-1 p-2 bg-ink/5 rounded text-xs">{lastPrompt}</p>
-        </details>
-      )}
-    </div>
-  );
+// Homepage Manager Component
+interface MenuImage {
+  menuItem: string;
+  imageUrl: string;
 }
 
-// Homepage Manager Component
 function HomepageManager() {
   const [nextEventData, setNextEventData] = useState({
     title: "",
@@ -1305,6 +1237,7 @@ function HomepageManager() {
     time: "12:00",
     chef: "",
     image: "",
+    menuImages: [] as MenuImage[],
     menuPreview: [] as string[],
     description: "",
   });
@@ -1333,6 +1266,7 @@ function HomepageManager() {
           time: parsed.time || "12:00",
           chef: parsed.chef || "",
           image: parsed.image || "",
+          menuImages: parsed.menuImages || [],
           menuPreview: parsed.menuPreview || [],
           description: parsed.description || "",
         });
@@ -1464,26 +1398,28 @@ function HomepageManager() {
                   />
                 )}
                 
-                {/* AI Image Generation Button */}
-                <AIImageGenerator 
-                  title={nextEventData.title}
-                  menuItems={menuInput.split("\n").filter(m => m.trim())}
-                  chef={nextEventData.chef}
-                  onImageGenerated={(url) => setNextEventData({ ...nextEventData, image: url })}
-                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="menuPreview" className="font-bold">Menú Previsto (uno por línea)</Label>
+                <Label htmlFor="menuPreview" className="font-bold">Menú Previsto (uno por línea, máx. 4)</Label>
                 <Textarea
                   id="menuPreview"
                   value={menuInput}
                   onChange={(e) => setMenuInput(e.target.value)}
-                  placeholder="Tortilla de patatas&#10;Bocadillo especial&#10;Ensalada mixta"
+                  placeholder="Bocadillo de jamón&#10;Tortilla de patatas&#10;Ensalada mixta&#10;Croquetas caseras"
                   rows={5}
                   className="border-2 border-ink"
                 />
-                <p className="text-xs text-ink/60">Estos platos aparecerán en la sección de countdown</p>
+                <p className="text-xs text-ink/60">Estos platos aparecerán en la sección de countdown con imágenes generadas por IA</p>
+                
+                {/* AI Image Generation Button - Now generates one image per menu item */}
+                <AIImageGenerator 
+                  title={nextEventData.title}
+                  menuItems={menuInput.split("\n").filter(m => m.trim())}
+                  chef={nextEventData.chef}
+                  existingImages={nextEventData.menuImages}
+                  onImagesGenerated={(images) => setNextEventData({ ...nextEventData, menuImages: images })}
+                />
               </div>
             </div>
           </div>
@@ -1493,10 +1429,7 @@ function HomepageManager() {
             <div className="border-t-2 border-ink pt-6">
               <h4 className="font-bold text-ink mb-3">Vista Previa:</h4>
               <div className="bg-ink text-cream p-4 rounded-lg">
-                <div className="flex items-start gap-4">
-                  {nextEventData.image && (
-                    <img src={nextEventData.image} alt="Preview" className="w-24 h-24 object-cover rounded border-2 border-orange" />
-                  )}
+                <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-bold text-orange">{nextEventData.title || "Título del evento"}</h3>
                     <p className="text-cream/70">
@@ -1504,17 +1437,38 @@ function HomepageManager() {
                       {nextEventData.time && " a las " + nextEventData.time}
                     </p>
                     {nextEventData.chef && <p className="text-cream/70">Chef: {nextEventData.chef}</p>}
-                    {menuInput && (
-                      <div className="mt-2">
-                        <p className="text-xs text-cream/50 mb-1">Menú previsto:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {menuInput.split("\n").filter(m => m.trim()).slice(0, 4).map((item, i) => (
-                            <span key={i} className="text-xs bg-orange/20 text-orange px-2 py-0.5 rounded">{item}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
+                  
+                  {/* Menu Images Grid */}
+                  {nextEventData.menuImages.length > 0 && (
+                    <div>
+                      <p className="text-xs text-cream/50 mb-2">Platos de la semana:</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {nextEventData.menuImages.map((img, i) => (
+                          <div key={i} className="relative">
+                            <img 
+                              src={img.imageUrl} 
+                              alt={img.menuItem}
+                              className="w-full aspect-square object-cover rounded border-2 border-orange"
+                            />
+                            <p className="text-xs text-center text-cream/80 mt-1 truncate">{img.menuItem}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Fallback to text menu if no images */}
+                  {nextEventData.menuImages.length === 0 && menuInput && (
+                    <div>
+                      <p className="text-xs text-cream/50 mb-1">Menú previsto:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {menuInput.split("\n").filter(m => m.trim()).slice(0, 4).map((item, i) => (
+                          <span key={i} className="text-xs bg-orange/20 text-orange px-2 py-0.5 rounded">{item}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
