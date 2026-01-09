@@ -362,7 +362,7 @@ const settingsRouter = router({
     .input(z.object({ key: z.string() }))
     .query(async ({ input }) => {
       // Try to fetch from Bunny.net CDN
-      const cdnUrl = ENV.BUNNY_CDN_URL || "https://cfls.b-cdn.net";
+      const cdnUrl = ENV.bunnyCdnUrl || "https://cfls.b-cdn.net";
       try {
         const response = await fetch(`${cdnUrl}/settings/${input.key}.json?t=${Date.now()}`);
         if (response.ok) {
@@ -382,8 +382,8 @@ const settingsRouter = router({
     }))
     .mutation(async ({ input }) => {
       // Save to Bunny.net storage
-      const storageZone = ENV.BUNNY_STORAGE_ZONE;
-      const apiKey = ENV.BUNNY_STORAGE_API_KEY;
+      const storageZone = ENV.bunnyStorageZone;
+      const apiKey = ENV.bunnyStorageApiKey;
       
       if (!storageZone || !apiKey) {
         throw new Error("Bunny.net storage not configured");
