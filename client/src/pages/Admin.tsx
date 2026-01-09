@@ -44,6 +44,8 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { ImageUpload, GalleryUpload } from "@/components/ImageUpload";
 import { AIImageGenerator } from "@/components/AIImageGenerator";
+import { events as staticEvents } from "@/data/events";
+import { allFoodItems } from "@/data/allFoodItems";
 
 const ADMIN_CODE = "420";
 
@@ -232,8 +234,22 @@ function EventsManager() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
 
-  // Fetch events from API
-  const { data: events, isLoading, refetch } = trpc.events.list.useQuery();
+  // Fetch events from API, fallback to static data
+  const { data: dbEvents, isLoading: dbLoading, refetch } = trpc.events.list.useQuery();
+  
+  // Use database events if available, otherwise use static data
+  const events = (dbEvents && dbEvents.length > 0) ? dbEvents : staticEvents.map((e, i) => ({
+    id: parseInt(e.id) || i + 1,
+    title: e.title,
+    date: e.date,
+    description: e.description,
+    image: e.image,
+    chef: (e as any).chef || null,
+    menuItems: e.menuItems || [],
+    gallery: e.gallery || [],
+    isPublished: true
+  }));
+  const isLoading = dbLoading && (!staticEvents || staticEvents.length === 0);
   
   // Mutations
   const createEvent = trpc.events.create.useMutation({
@@ -576,7 +592,21 @@ function FoodItemsManager() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
 
-  const { data: foodItems, isLoading, refetch } = trpc.foodItems.list.useQuery();
+  // Fetch food items from API, fallback to static data
+  const { data: dbFoodItems, isLoading: dbLoading, refetch } = trpc.foodItems.list.useQuery();
+  
+  // Use database food items if available, otherwise use static data
+  const foodItems = (dbFoodItems && dbFoodItems.length > 0) ? dbFoodItems : allFoodItems.map((item, i) => ({
+    id: i + 1,
+    name: item.name,
+    description: item.description || null,
+    image: item.image || null,
+    chef: item.chef || null,
+    category: item.category || null,
+    rank: item.rank || null,
+    isPublished: true
+  }));
+  const isLoading = dbLoading && (!allFoodItems || allFoodItems.length === 0);
 
   const createFoodItem = trpc.foodItems.create.useMutation({
     onSuccess: () => {
