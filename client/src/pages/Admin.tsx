@@ -562,7 +562,7 @@ function EventForm({
         <GalleryUpload
           value={Array.isArray(formData.gallery) ? formData.gallery : []}
           onChange={(urls) => setFormData({ ...formData, gallery: urls })}
-          maxImages={12}
+          maxImages={120}
         />
       </div>
 
