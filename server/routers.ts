@@ -356,15 +356,23 @@ const ideogramRouter = router({
     }),
 });
 
-// Settings Router
+// Settings Router - Uses Bunny.net storage instead of database
 const settingsRouter = router({
   get: publicProcedure
     .input(z.object({ key: z.string() }))
     .query(async ({ input }) => {
-      const db = await getDb();
-      if (!db) return null;
-      const result = await db.select().from(siteSettings).where(eq(siteSettings.key, input.key)).limit(1);
-      return result[0] || null;
+      // Try to fetch from Bunny.net CDN
+      const cdnUrl = ENV.BUNNY_CDN_URL || "https://cfls.b-cdn.net";
+      try {
+        const response = await fetch(`${cdnUrl}/settings/${input.key}.json?t=${Date.now()}`);
+        if (response.ok) {
+          const data = await response.json();
+          return { id: 1, key: input.key, value: JSON.stringify(data), updatedAt: new Date() };
+        }
+      } catch (e) {
+        // File doesn't exist yet, return null
+      }
+      return null;
     }),
 
   set: publicProcedure
@@ -373,19 +381,29 @@ const settingsRouter = router({
       value: z.string(),
     }))
     .mutation(async ({ input }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database not available");
+      // Save to Bunny.net storage
+      const storageZone = ENV.BUNNY_STORAGE_ZONE;
+      const apiKey = ENV.BUNNY_STORAGE_API_KEY;
       
-      // Check if setting exists
-      const existing = await db.select().from(siteSettings).where(eq(siteSettings.key, input.key)).limit(1);
+      if (!storageZone || !apiKey) {
+        throw new Error("Bunny.net storage not configured");
+      }
       
-      if (existing.length > 0) {
-        await db.update(siteSettings).set({ value: input.value }).where(eq(siteSettings.key, input.key));
-      } else {
-        await db.insert(siteSettings).values({
-          key: input.key,
-          value: input.value,
-        });
+      const fileName = `settings/${input.key}.json`;
+      const uploadUrl = `https://storage.bunnycdn.com/${storageZone}/${fileName}`;
+      
+      const response = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "AccessKey": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: input.value,
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to save settings: ${errorText}`);
       }
       
       return { success: true };
