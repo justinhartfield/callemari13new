@@ -37,17 +37,17 @@ export const chefs: Chef[] = [
     signatureDishes: [
       {
         name: "Texas Pulled Conejo",
-        image: "http://marti13.es/wp-content/uploads/2024/02/GAwDIFWXsAAZdTb.jpeg",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/GAwDIFWXsAAZdTb.jpeg",
         description: "Conejo deshilachado estilo Texas con salsa BBQ casera"
       },
       {
         name: "Chivito Estilo California",
-        image: "http://marti13.es/wp-content/uploads/2017/03/chivito_valenciano_NoticiaAmpliada.jpg",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2017/03/chivito_valenciano_NoticiaAmpliada.jpg",
         description: "El bocadillo inaugural que dio inicio al gremio"
       },
       {
         name: "Valenciano - Figatells",
-        image: "http://marti13.es/wp-content/uploads/2024/06/Figatells-1200x828-1.webp",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/06/Figatells-1200x828-1.webp",
         description: "Figatells tradicionales con toque moderno"
       }
     ],
@@ -68,17 +68,17 @@ export const chefs: Chef[] = [
     signatureDishes: [
       {
         name: "Epicurus - Sardinas",
-        image: "http://marti13.es/wp-content/uploads/2024/02/download-1.jpg",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/download-1.jpg",
         description: "Sardinas con escalivada y alioli de limón"
       },
       {
         name: "Tang - Calabaza Asada",
-        image: "http://marti13.es/wp-content/uploads/2024/02/long_french_bread_sandwhich_of_Calabaza_asada_salchicha_de_pavo_cebolla_asada_pinones_miel_de_limon_huevos_cocinado.png",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/long_french_bread_sandwhich_of_Calabaza_asada_salchicha_de_pavo_cebolla_asada_pinones_miel_de_limon_huevos_cocinado.png",
         description: "Calabaza asada con salchicha de pavo y piñones"
       },
       {
         name: "Calamares Siglo XIX",
-        image: "http://marti13.es/wp-content/uploads/2024/05/19th_century_calamari_dish_with_Tomate_pasas_pinones_cebolla_morada_aceitunas_alcaparras_Que_fantasia_png.png",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/05/19th_century_calamari_dish_with_Tomate_pasas_pinones_cebolla_morada_aceitunas_alcaparras_Que_fantasia_png.png",
         description: "Receta histórica con tomate, pasas y piñones"
       }
     ],
@@ -99,12 +99,12 @@ export const chefs: Chef[] = [
     signatureDishes: [
       {
         name: "Tortilla de Bar Pizcueta 14",
-        image: "http://marti13.es/wp-content/uploads/2024/01/Pizcueta-14-3-1024x680-1.jpg",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/01/Pizcueta-14-3-1024x680-1.jpg",
         description: "La tortilla que rompió todos los récords"
       },
       {
         name: "Lomo Adobado Empanizado",
-        image: "http://marti13.es/wp-content/uploads/2024/03/larga_bocadillo_con_bacalao_o_salmon_cebolla_ajo_tierna_mermelada_de_naranja_aceite_de_oliva_rucula_tapenade.png",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/03/larga_bocadillo_con_bacalao_o_salmon_cebolla_ajo_tierna_mermelada_de_naranja_aceite_de_oliva_rucula_tapenade.png",
         description: "Con papas fritas y salsa de queso azul"
       }
     ],
@@ -125,7 +125,7 @@ export const chefs: Chef[] = [
     signatureDishes: [
       {
         name: "Bocadillo Estilo Euskadi",
-        image: "http://marti13.es/wp-content/uploads/2024/01/bocadillo-de-anchoas-de-la-escala-foto-principal.webp",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/01/bocadillo-de-anchoas-de-la-escala-foto-principal.webp",
         description: "Anchoas, pimientos y alioli vasco"
       }
     ],
@@ -146,7 +146,7 @@ export const chefs: Chef[] = [
     signatureDishes: [
       {
         name: "Tokio - Atún Picante",
-        image: "http://marti13.es/wp-content/uploads/2024/04/bocadillo_larga_pan_de_frances_Mayonesa_de_wasabi_pepino_aguacate_atun_picante_edamame.png",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/04/bocadillo_larga_pan_de_frances_Mayonesa_de_wasabi_pepino_aguacate_atun_picante_edamame.png",
         description: "Atún picante con mayonesa de wasabi y edamame"
       }
     ],
@@ -167,7 +167,7 @@ export const chefs: Chef[] = [
     signatureDishes: [
       {
         name: "Tortilla de toda la vida",
-        image: "http://marti13.es/wp-content/uploads/2024/09/Spanish_Omelette.jpeg",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/09/Spanish_Omelette.jpeg",
         description: "La tortilla española perfecta, sin adornos"
       }
     ],
@@ -188,7 +188,7 @@ export const chefs: Chef[] = [
     signatureDishes: [
       {
         name: "NERO: Creación Especial",
-        image: "http://marti13.es/wp-content/uploads/2024/06/Nero_special_artistic_gourmet_sandwich.png",
+        image: "https://cfls.b-cdn.net/wp-content/uploads/2024/06/Nero_special_artistic_gourmet_sandwich.png",
         description: "Cada semana una sorpresa diferente"
       }
     ],

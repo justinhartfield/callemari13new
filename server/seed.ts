@@ -16,7 +16,7 @@ export const seedFoodItems = [
   {
     name: "Tortilla de Bar Pizcueta 14",
     description: "La tortilla que empezó todo. Jugosa, cremosa, perfecta.",
-    image: "http://marti13.es/wp-content/uploads/2024/01/Pizcueta-14-3-1024x680-1.jpg",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/01/Pizcueta-14-3-1024x680-1.jpg",
     chef: "Fede",
     category: "Tortillas",
     rank: 1
@@ -24,7 +24,7 @@ export const seedFoodItems = [
   {
     name: "Texas Pulled Conejo",
     description: "Conejo desmechado estilo Texas BBQ. Una fusión perfecta.",
-    image: "http://marti13.es/wp-content/uploads/2024/02/GAwDIFWXsAAZdTb.jpeg",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/GAwDIFWXsAAZdTb.jpeg",
     chef: "Justin",
     category: "Bocadillos",
     rank: 1
@@ -32,7 +32,7 @@ export const seedFoodItems = [
   {
     name: "Epicurus - Sardinas",
     description: "Sardinas frescas con el toque mediterráneo perfecto.",
-    image: "http://marti13.es/wp-content/uploads/2024/02/download-1.jpg",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/download-1.jpg",
     chef: "Tyler",
     category: "Bocadillos",
     rank: 2
@@ -40,7 +40,7 @@ export const seedFoodItems = [
   {
     name: "Tang - Calabaza Asada",
     description: "Calabaza asada con especias orientales. Vegetariano y delicioso.",
-    image: "http://marti13.es/wp-content/uploads/2024/02/long_french_bread_sandwhich_of_Calabaza_asada_salchicha_de_pavo_cebolla_asada_pinones_miel_de_limon_huevos_cocinado.png",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/long_french_bread_sandwhich_of_Calabaza_asada_salchicha_de_pavo_cebolla_asada_pinones_miel_de_limon_huevos_cocinado.png",
     chef: "Tang",
     category: "Bocadillos",
     rank: 3
@@ -48,7 +48,7 @@ export const seedFoodItems = [
   {
     name: "Melisa - Sobrasada",
     description: "Sobrasada mallorquina con miel. Simple pero inolvidable.",
-    image: "http://marti13.es/wp-content/uploads/2024/02/Sobrasada-con-Miel-El-Aperitivo-Perfecto-1.jpg",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/Sobrasada-con-Miel-El-Aperitivo-Perfecto-1.jpg",
     chef: "Fede",
     category: "Bocadillos",
     rank: null
@@ -56,7 +56,7 @@ export const seedFoodItems = [
   {
     name: "Tokio - Atún Picante",
     description: "Atún con mayonesa picante estilo japonés.",
-    image: "http://marti13.es/wp-content/uploads/2024/04/bocadillo_larga_pan_de_frances_Mayonesa_de_wasabi_pepino_aguacate_atun_picante_edamame.png",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/04/bocadillo_larga_pan_de_frances_Mayonesa_de_wasabi_pepino_aguacate_atun_picante_edamame.png",
     chef: "Tang",
     category: "Bocadillos",
     rank: null
@@ -64,7 +64,7 @@ export const seedFoodItems = [
   {
     name: "Mafioso - Pollo Parma",
     description: "Pollo empanado con jamón y queso fundido.",
-    image: "http://marti13.es/wp-content/uploads/2024/03/a_long_bocadillo_of_Pollo_empanizado_jamon_serrano_queso_manchego_tomate_lechuga_mayonesa_de_ajo.png",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/03/a_long_bocadillo_of_Pollo_empanizado_jamon_serrano_queso_manchego_tomate_lechuga_mayonesa_de_ajo.png",
     chef: "Justin",
     category: "Bocadillos",
     rank: null
@@ -72,7 +72,7 @@ export const seedFoodItems = [
   {
     name: "Calamares Siglo XIX",
     description: "Calamares rebozados con receta tradicional valenciana.",
-    image: "http://marti13.es/wp-content/uploads/2024/05/19th_century_calamari_dish_with_Tomate_pasas_pinones_cebolla_morada_aceitunas_alcaparras_Que_fantasia_png.png",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/05/19th_century_calamari_dish_with_Tomate_pasas_pinones_cebolla_morada_aceitunas_alcaparras_Que_fantasia_png.png",
     chef: "Tyler",
     category: "Bocadillos",
     rank: null
@@ -80,7 +80,7 @@ export const seedFoodItems = [
   {
     name: "Rabbi Tyler - Salmón",
     description: "Salmón ahumado con queso crema y alcaparras.",
-    image: "http://marti13.es/wp-content/uploads/2024/03/larga_bocadillo_con_bacalao_o_salmon_cebolla_ajo_tierna_mermelada_de_naranja_aceite_de_oliva_rucula_tapenade.png",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/03/larga_bocadillo_con_bacalao_o_salmon_cebolla_ajo_tierna_mermelada_de_naranja_aceite_de_oliva_rucula_tapenade.png",
     chef: "Tyler",
     category: "Bocadillos",
     rank: null
@@ -88,7 +88,7 @@ export const seedFoodItems = [
   {
     name: "Valenciano - Figatells",
     description: "Figatells tradicionales valencianos.",
-    image: "http://marti13.es/wp-content/uploads/2024/06/Figatells-1200x828-1.webp",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/06/Figatells-1200x828-1.webp",
     chef: "Óscar",
     category: "Bocadillos",
     rank: null
@@ -96,7 +96,7 @@ export const seedFoodItems = [
   {
     name: "Hamburguesas de Potro",
     description: "Las legendarias hamburguesas de carne de potro.",
-    image: "http://marti13.es/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-16-at-13.27.09-300x225.jpeg",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/02/WhatsApp-Image-2024-02-16-at-13.27.09-300x225.jpeg",
     chef: "Justin",
     category: "Hamburguesas",
     rank: 1
@@ -104,7 +104,7 @@ export const seedFoodItems = [
   {
     name: "Bandeja de Mariscos",
     description: "Selección de mariscos frescos del día.",
-    image: "http://marti13.es/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-19-at-13.23.45-300x225.jpeg",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2024/04/WhatsApp-Image-2024-04-19-at-13.23.45-300x225.jpeg",
     chef: "Tyler",
     category: "Bandejas",
     rank: 1
