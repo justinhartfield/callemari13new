@@ -244,18 +244,43 @@ const uploadRouter = router({
       contentType: z.string().default("image/jpeg"),
     }))
     .mutation(async ({ input }) => {
+      // Check Bunny.net credentials
+      const storageZone = ENV.bunnyStorageZone || "cfls";
+      const apiKey = ENV.bunnyStorageApiKey || "";
+      const cdnUrl = ENV.bunnyCdnUrl || "https://cfls.b-cdn.net";
+      
+      if (!apiKey) {
+        throw new Error("Bunny.net storage not configured. Set BUNNY_STORAGE_API_KEY environment variable.");
+      }
+      
       // Decode base64 data
       const buffer = Buffer.from(input.data, "base64");
       
       // Generate unique filename with timestamp
       const timestamp = Date.now();
-      const ext = input.filename.split(".").pop() || "jpg";
-      const uniqueFilename = `uploads/${timestamp}-${input.filename.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const safeFilename = input.filename.replace(/[^a-zA-Z0-9.-]/g, "_");
+      const uniqueFilename = `uploads/${timestamp}-${safeFilename}`;
       
-      // Upload to S3
-      const result = await storagePut(uniqueFilename, buffer, input.contentType);
+      // Upload to Bunny.net Storage
+      const uploadUrl = `https://storage.bunnycdn.com/${storageZone}/${uniqueFilename}`;
       
-      return { url: result.url, key: result.key };
+      const response = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "AccessKey": apiKey,
+          "Content-Type": input.contentType,
+        },
+        body: buffer,
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => response.statusText);
+        throw new Error(`Bunny.net upload failed (${response.status}): ${errorText}`);
+      }
+      
+      // Return the CDN URL
+      const url = `${cdnUrl}/${uniqueFilename}`;
+      return { url, key: uniqueFilename };
     }),
 });
 
