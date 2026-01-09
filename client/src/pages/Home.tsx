@@ -94,7 +94,7 @@ export default function Home() {
               { icon: Calendar, value: "76+", label: "Eventos" },
               { icon: Users, value: "∞", label: "Amigos" },
               { icon: Trophy, value: "12", label: "Platos Legendarios" },
-              { icon: Calendar, value: "2017", label: "Desde" },
+              { icon: Calendar, value: "2024", label: "Desde" },
             ].map((stat, index) => (
               <div
                 key={index}
@@ -165,7 +165,7 @@ export default function Home() {
               </div>
               {/* Floating Badge */}
               <div className="absolute -bottom-4 -right-4 md:-bottom-6 md:-right-6 bg-yellow border-4 border-ink p-4 md:p-6 shadow-brutal rotate-sticker-alt">
-                <span className="text-ink font-bold text-lg md:text-xl">Est. 2017</span>
+                <span className="text-ink font-bold text-lg md:text-xl">Est. 2024</span>
               </div>
             </div>
 

@@ -14,7 +14,7 @@ const tickerItems: TickerItem[] = [
   { label: "ESPECIALIDAD", value: "TORTILLA DE ÓSCAR" },
   { label: "MIEMBROS", value: "SOLO INVITACIÓN" },
   { label: "UBICACIÓN", value: "VALENCIA" },
-  { label: "DESDE", value: "2017" },
+  { label: "DESDE", value: "2024" },
   { label: "PLATOS SERVIDOS", value: "+500" },
   { label: "EVENTOS", value: "76+" },
   { label: "TRADICIÓN", value: "ALMORZAR" },
