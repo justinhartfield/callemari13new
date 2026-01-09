@@ -40,10 +40,10 @@ export const events: Event[] = [
     id: "1",
     title: "19/12 Lo final del año !",
     date: "2025-12-19",
-    image: "https://cfls.b-cdn.net/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-19-at-12.14.13.jpeg",
+    image: "https://cfls.b-cdn.net/wp-content/uploads/2025/12/event1-img1.jpeg",
     description: "19/12 Lo final del año !",
     menuItems: [],
-    gallery: ["https://cfls.b-cdn.net/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-19-at-12.14.03-768x1024.jpeg", "https://cfls.b-cdn.net/wp-content/uploads/2025/12/WhatsApp-Image-2025-12-19-at-12.14.07-768x1024.jpeg"]
+    gallery: ["https://cfls.b-cdn.net/wp-content/uploads/2025/12/event1-img1.jpeg", "https://cfls.b-cdn.net/wp-content/uploads/2025/12/event1-img2.jpeg", "https://cfls.b-cdn.net/wp-content/uploads/2025/12/event1-img3.jpeg"]
   },
   {
     id: "2",
