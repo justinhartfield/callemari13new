@@ -172,6 +172,7 @@ export const chefs: Chef[] = [
       }
     ],
     funFact: "Su primera almorzar fue un éxito rotundo"
+  }
 ];
 
 // Calculate total stats
