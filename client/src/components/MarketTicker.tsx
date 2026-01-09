@@ -22,26 +22,42 @@ const tickerItems: TickerItem[] = [
 
 export default function MarketTicker() {
   return (
-    <div className="bg-ink text-cream py-2 overflow-hidden">
-      <div 
-        className="flex gap-8 whitespace-nowrap"
-        style={{
-          animation: "marquee 30s linear infinite",
-        }}
-      >
-        {/* Duplicate items for seamless loop */}
-        {[...tickerItems, ...tickerItems].map((item, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <span className="text-orange font-bold uppercase text-sm">{item.label}:</span>
-            <span className="text-cream font-semibold text-sm">{item.value}</span>
-            <span className="text-orange mx-4">◆</span>
-          </div>
-        ))}
+    <div className="bg-ink text-cream py-3 overflow-hidden border-y-2 border-cream/20">
+      <div className="relative flex">
+        {/* First set of items */}
+        <div 
+          className="flex shrink-0 animate-marquee"
+          style={{ gap: '2rem' }}
+        >
+          {tickerItems.map((item, index) => (
+            <div key={`a-${index}`} className="flex items-center shrink-0" style={{ gap: '0.5rem' }}>
+              <span className="text-orange font-bold uppercase text-sm tracking-wide">{item.label}:</span>
+              <span className="text-cream font-semibold text-sm">{item.value}</span>
+              <span className="text-orange ml-6">◆</span>
+            </div>
+          ))}
+        </div>
+        {/* Duplicate set for seamless loop */}
+        <div 
+          className="flex shrink-0 animate-marquee"
+          style={{ gap: '2rem' }}
+        >
+          {tickerItems.map((item, index) => (
+            <div key={`b-${index}`} className="flex items-center shrink-0" style={{ gap: '0.5rem' }}>
+              <span className="text-orange font-bold uppercase text-sm tracking-wide">{item.label}:</span>
+              <span className="text-cream font-semibold text-sm">{item.value}</span>
+              <span className="text-orange ml-6">◆</span>
+            </div>
+          ))}
+        </div>
       </div>
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+          animation: marquee 40s linear infinite;
         }
       `}</style>
     </div>

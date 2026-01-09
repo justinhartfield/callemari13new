@@ -26,7 +26,7 @@ export const chefs: Chef[] = [
     id: "1",
     name: "Justin",
     nickname: "El Fundador",
-    avatar: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400",
+    avatar: "https://cfls.b-cdn.net/images/chefs/justin.jpg",
     bio: "Fundador del Gremio del Almorzar y maestro de los bocadillos creativos. Su pasión por la cocina americana fusionada con ingredientes valencianos ha dado lugar a algunas de las creaciones más memorables del club.",
     specialty: "Bocadillos Creativos & Fusión Americana",
     stats: {
@@ -57,7 +57,7 @@ export const chefs: Chef[] = [
     id: "2",
     name: "Tyler",
     nickname: "El Experimentador",
-    avatar: "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=400",
+    avatar: "https://cfls.b-cdn.net/images/chefs/tyler.jpg",
     bio: "Conocido por sus creaciones atrevidas y su dominio de los sabores mediterráneos. Tyler no tiene miedo de experimentar con ingredientes poco convencionales.",
     specialty: "Pescados & Mariscos Creativos",
     stats: {
@@ -88,7 +88,7 @@ export const chefs: Chef[] = [
     id: "3",
     name: "Fede",
     nickname: "El Clásico",
-    avatar: "https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?w=400",
+    avatar: "https://cfls.b-cdn.net/images/chefs/fede.jpg",
     bio: "Defensor de la cocina tradicional valenciana. Sus tortillas son legendarias y su técnica impecable. Fede demuestra que a veces lo simple es lo mejor.",
     specialty: "Tortillas & Cocina Tradicional",
     stats: {
@@ -114,7 +114,7 @@ export const chefs: Chef[] = [
     id: "4",
     name: "Molly",
     nickname: "La Vasca",
-    avatar: "https://images.unsplash.com/photo-1607631568010-a87245c0daf8?w=400",
+    avatar: "https://cfls.b-cdn.net/images/chefs/molly.jpg",
     bio: "Aporta los sabores del País Vasco al gremio. Sus pintxos y bocadillos estilo Euskadi han conquistado a todos los miembros.",
     specialty: "Cocina Vasca & Pintxos",
     stats: {
@@ -135,7 +135,7 @@ export const chefs: Chef[] = [
     id: "5",
     name: "Tang",
     nickname: "El Asiático",
-    avatar: "https://images.unsplash.com/photo-1583394293214-28ece9ce8f7a?w=400",
+    avatar: "https://cfls.b-cdn.net/images/chefs/tang.jpg",
     bio: "Fusiona sabores asiáticos con la tradición del almorzar valenciano. Sus creaciones con wasabi, atún y sabores umami son únicas en el gremio.",
     specialty: "Fusión Asiática",
     stats: {
@@ -156,7 +156,7 @@ export const chefs: Chef[] = [
     id: "6",
     name: "Óscar",
     nickname: "El Tradicional",
-    avatar: "https://images.unsplash.com/photo-1566554273541-37a9ca77b91f?w=400",
+    avatar: "https://cfls.b-cdn.net/images/chefs/oscar.jpg",
     bio: "Maestro de la tortilla española clásica. Óscar defiende que la perfección está en la simplicidad y la técnica depurada.",
     specialty: "Tortilla Española Clásica",
     stats: {

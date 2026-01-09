@@ -40,21 +40,6 @@ export default function About() {
 
             {/* Content */}
             <div className="space-y-8">
-              <div className="brutal-card p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-ink mb-4">El Origen</h2>
-                <p className="text-ink/80 leading-relaxed mb-4">
-                  Martí 13 nació en 2017 de una idea simple: recuperar la tradición 
-                  valenciana del almorzar. Un grupo de amigos que decidieron que 
-                  cada viernes sería sagrado, dedicado a la buena comida y la 
-                  mejor compañía.
-                </p>
-                <p className="text-ink/80 leading-relaxed">
-                  El nombre viene de la calle donde todo empezó: Calle Martí, 
-                  número 13. Un lugar que se convirtió en el cuartel general 
-                  de lo que ahora llamamos "El Gremio del Almorzar".
-                </p>
-              </div>
-
               <div className="brutal-card-orange p-6 md:p-8">
                 <h2 className="text-2xl font-bold text-ink mb-4">La Tradición del Almorzar</h2>
                 <p className="text-ink/80 leading-relaxed mb-4">
@@ -63,25 +48,15 @@ export default function About() {
                   10:00 y las 12:00. Tradicionalmente incluye bocadillos, tortilla, 
                   embutidos y, por supuesto, buen vino.
                 </p>
-                <p className="text-ink/80 leading-relaxed">
+                <p className="text-ink/80 leading-relaxed mb-4">
                   En Martí 13 hemos llevado esta tradición al siguiente nivel, 
                   experimentando con nuevos sabores mientras respetamos las raíces.
-                </p>
-              </div>
-
-              <div className="brutal-card p-6 md:p-8">
-                <h2 className="text-2xl font-bold text-ink mb-4">El Gremio</h2>
-                <p className="text-ink/80 leading-relaxed mb-4">
-                  Somos un grupo diverso unido por la pasión por la comida. 
-                  Cada miembro aporta algo único: desde la tortilla perfecta 
-                  de Óscar hasta las creaciones experimentales de Nero, pasando 
-                  por los mariscos frescos que Tyler siempre olvida acompañar 
-                  con coleslaw.
+                  Cada viernes es sagrado, dedicado a la buena comida y la mejor compañía.
                 </p>
                 <p className="text-ink/80 leading-relaxed">
-                  El sistema es simple: cada semana, un miembro diferente se 
-                  encarga de la cocina. Esto garantiza variedad y mantiene 
-                  viva la competencia amistosa.
+                  El nombre viene de la calle donde todo empezó: Calle Martí, 
+                  número 13. Un lugar que se convirtió en el cuartel general 
+                  de lo que ahora llamamos "El Gremio del Almorzar".
                 </p>
               </div>
             </div>
@@ -138,14 +113,15 @@ export default function About() {
           </h2>
           <div className="max-w-2xl mx-auto space-y-6">
             {[
-              { year: "2017", event: "Fundación de Martí 13" },
-              { year: "2018", event: "Primera tortilla legendaria de Óscar" },
-              { year: "2019", event: "Se introduce la tradición de las hamburguesas de potro" },
-              { year: "2020", event: "Almuerzos virtuales durante la pandemia" },
-              { year: "2021", event: "Regreso triunfal a los encuentros presenciales" },
-              { year: "2022", event: "Expansión del menú con mariscos" },
-              { year: "2023", event: "Creación del Hall of Fame" },
-              { year: "2024", event: "76+ eventos y contando" },
+              { year: "Ene 2024", event: "Inaugural Almorzar - Chivito Estilo California y Bocadillo Clásico" },
+              { year: "Feb 2024", event: "Tortilla de Bar Pizcueta 14 y Texas Pulled Conejo debutan" },
+              { year: "Mar 2024", event: "Día de las Mujeres - Melisa Sobrasada se convierte en leyenda" },
+              { year: "May 2024", event: "Calamares Siglo XIX - Batalla de puntuación más alta" },
+              { year: "Jun 2024", event: "Verano Empiezan - Figatells valencianos auténticos" },
+              { year: "Oct 2024", event: "Halloweed @ Martí 13 - Hamburguesas de Pollo Curry" },
+              { year: "Nov 2024", event: "Hamburguesas de Potro y Conejo revolucionan el menú" },
+              { year: "Dic 2024", event: "Feliz Navidad antes de Amsterdam - Bacalao con Pesto Alioli" },
+              { year: "Ene 2025", event: "Arranca el año nuevo con estilo - 76+ eventos y contando" },
             ].map((item, index) => (
               <div key={index} className="flex gap-4 items-start">
                 <div className="sticker-badge shrink-0">{item.year}</div>

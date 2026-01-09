@@ -1,11 +1,11 @@
 /**
  * DESIGN: Neo-Brutalist "Zine Bodega"
  * Hall of Fame page - All food items organized by category
- * Now fetches data from database API
+ * With like functionality - items sorted by most likes
  */
 
 import { useState, useMemo } from "react";
-import { Search, X, Trophy, Loader2 } from "lucide-react";
+import { Search, X, Trophy, Loader2, Heart } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { useFoodItems, FoodItem } from "@/hooks/useFoodItems";
@@ -23,7 +23,7 @@ const menuCategories = [
 ];
 
 export default function HallOfFame() {
-  const { foodItems, isLoading } = useFoodItems();
+  const { foodItems, isLoading, toggleLike } = useFoodItems();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState<FoodItem | null>(null);
@@ -52,6 +52,74 @@ export default function HallOfFame() {
       items: filteredItems.filter(item => item.category === cat.name)
     })).filter(cat => cat.items.length > 0);
   }, [availableCategories, filteredItems]);
+
+  // Handle like click
+  const handleLike = (e: React.MouseEvent, itemId: number) => {
+    e.stopPropagation();
+    toggleLike(itemId);
+  };
+
+  // Render a food item card
+  const renderFoodCard = (item: FoodItem, index: number, showRank: boolean = true) => (
+    <div
+      key={item.id}
+      onClick={() => setSelectedItem(item)}
+      className="group brutal-card overflow-hidden hover:shadow-brutal-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer relative"
+    >
+      {/* Rank badge for first 3 */}
+      {showRank && index < 3 && (
+        <div className="absolute top-2 left-2 z-10 bg-yellow text-ink px-2 py-1 font-bold text-xs border-2 border-ink rotate-sticker">
+          <Trophy className="w-3 h-3 inline mr-1" />
+          #{index + 1}
+        </div>
+      )}
+      
+      {/* Like button */}
+      <button
+        onClick={(e) => handleLike(e, item.id)}
+        className={`absolute top-2 right-2 z-10 p-2 border-2 border-ink transition-all ${
+          item.isLiked 
+            ? "bg-red-500 text-white" 
+            : "bg-cream text-ink hover:bg-red-100"
+        }`}
+      >
+        <Heart className={`w-4 h-4 ${item.isLiked ? "fill-current" : ""}`} />
+      </button>
+
+      <div className="relative aspect-square overflow-hidden border-b-4 border-ink">
+        <img
+          src={item.image || "/images/hero-almorzar.jpg"}
+          alt={item.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/images/hero-almorzar.jpg";
+          }}
+        />
+      </div>
+      <div className="p-3 md:p-4">
+        <h3 className="font-bold text-ink text-sm md:text-base line-clamp-2">
+          {item.name}
+        </h3>
+        <p className="text-ink/60 text-xs mt-1 line-clamp-2">
+          {item.description || ""}
+        </p>
+        <div className="flex items-center justify-between mt-2">
+          {item.chef && (
+            <p className="text-orange text-xs font-semibold">
+              Chef: {item.chef}
+            </p>
+          )}
+          {item.likes > 0 && (
+            <span className="text-xs text-red-500 font-bold flex items-center gap-1">
+              <Heart className="w-3 h-3 fill-current" />
+              {item.likes}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
   
   return (
     <div className="min-h-screen bg-cream">
@@ -75,7 +143,7 @@ export default function HallOfFame() {
           </h1>
           <p className="text-cream/70 text-lg max-w-2xl">
             Más de {foodItems.length} platos creados por el gremio. Desde bocadillos legendarios 
-            hasta bandejas épicas, cada plato cuenta una historia.
+            hasta bandejas épicas, cada plato cuenta una historia. ¡Dale like a tus favoritos!
           </p>
         </div>
       </section>
@@ -93,8 +161,11 @@ export default function HallOfFame() {
               <div className="text-cream/80 text-sm uppercase tracking-wide">Categorías</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold">∞</div>
-              <div className="text-cream/80 text-sm uppercase tracking-wide">Recuerdos</div>
+              <div className="text-3xl md:text-4xl font-bold flex items-center justify-center gap-1">
+                <Heart className="w-6 h-6 fill-current" />
+                {foodItems.reduce((sum, item) => sum + item.likes, 0)}
+              </div>
+              <div className="text-cream/80 text-sm uppercase tracking-wide">Likes Totales</div>
             </div>
           </div>
         </div>
@@ -179,47 +250,9 @@ export default function HallOfFame() {
               </button>
             </div>
           ) : activeCategory ? (
-            // Single category view
+            // Single category view - sorted by likes
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-              {filteredItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className="group brutal-card overflow-hidden hover:shadow-brutal-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer relative"
-                >
-                  {/* Rank badge for first 3 */}
-                  {index < 3 && (
-                    <div className="absolute top-2 left-2 z-10 bg-yellow text-ink px-2 py-1 font-bold text-xs border-2 border-ink rotate-sticker">
-                      <Trophy className="w-3 h-3 inline mr-1" />
-                      #{index + 1}
-                    </div>
-                  )}
-                  <div className="relative aspect-square overflow-hidden border-b-4 border-ink">
-                    <img
-                      src={item.image || "/images/hero-almorzar.jpg"}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = "/images/hero-almorzar.jpg";
-                      }}
-                    />
-                  </div>
-                  <div className="p-3 md:p-4">
-                    <h3 className="font-bold text-ink text-sm md:text-base line-clamp-2">
-                      {item.name}
-                    </h3>
-                    <p className="text-ink/60 text-xs mt-1 line-clamp-2">
-                      {item.description || ""}
-                    </p>
-                    {item.chef && (
-                      <p className="text-orange text-xs mt-2 font-semibold">
-                        Chef: {item.chef}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+              {filteredItems.map((item, index) => renderFoodCard(item, index, true))}
             </div>
           ) : (
             // All categories view
@@ -238,45 +271,7 @@ export default function HallOfFame() {
                 </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                  {category.items.slice(0, 10).map((item, index) => (
-                    <div
-                      key={item.id}
-                      onClick={() => setSelectedItem(item)}
-                      className="group brutal-card overflow-hidden hover:shadow-brutal-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer relative"
-                    >
-                      {/* Rank badge for first 3 in each category */}
-                      {index < 3 && (
-                        <div className="absolute top-2 left-2 z-10 bg-yellow text-ink px-2 py-1 font-bold text-xs border-2 border-ink rotate-sticker">
-                          <Trophy className="w-3 h-3 inline mr-1" />
-                          #{index + 1}
-                        </div>
-                      )}
-                      <div className="relative aspect-square overflow-hidden border-b-4 border-ink">
-                        <img
-                          src={item.image || "/images/hero-almorzar.jpg"}
-                          alt={item.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "/images/hero-almorzar.jpg";
-                          }}
-                        />
-                      </div>
-                      <div className="p-3 md:p-4">
-                        <h3 className="font-bold text-ink text-sm md:text-base line-clamp-2">
-                          {item.name}
-                        </h3>
-                        <p className="text-ink/60 text-xs mt-1 line-clamp-2">
-                          {item.description || ""}
-                        </p>
-                        {item.chef && (
-                          <p className="text-orange text-xs mt-2 font-semibold">
-                            Chef: {item.chef}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                  {category.items.slice(0, 10).map((item, index) => renderFoodCard(item, index, true))}
                 </div>
                 
                 {category.items.length > 10 && (
@@ -322,6 +317,18 @@ export default function HallOfFame() {
               <div className="absolute bottom-4 left-4 bg-orange text-cream px-3 py-1 font-bold">
                 {selectedItem.category}
               </div>
+              {/* Like button in modal */}
+              <button
+                onClick={(e) => handleLike(e, selectedItem.id)}
+                className={`absolute bottom-4 right-4 px-4 py-2 border-2 border-ink font-bold flex items-center gap-2 transition-all ${
+                  selectedItem.isLiked 
+                    ? "bg-red-500 text-white" 
+                    : "bg-cream text-ink hover:bg-red-100"
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${selectedItem.isLiked ? "fill-current" : ""}`} />
+                {selectedItem.likes > 0 ? selectedItem.likes : "Like"}
+              </button>
             </div>
             <div className="p-6 md:p-8">
               <div className="flex items-start gap-3 mb-4">
