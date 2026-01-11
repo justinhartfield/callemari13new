@@ -9,7 +9,7 @@
  * - Site settings
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { 
   Calendar, 
@@ -238,7 +238,7 @@ function EventsManager() {
   const { data: nextEventSettings } = trpc.settings.get.useQuery({ key: "nextEvent" });
   
   // Parse nextEvent data for pre-filling
-  const nextEventData = React.useMemo(() => {
+  const nextEventData = useMemo(() => {
     if (nextEventSettings?.value) {
       try {
         const parsed = JSON.parse(nextEventSettings.value);
