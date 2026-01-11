@@ -234,6 +234,30 @@ function EventsManager() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
 
+  // Fetch nextEvent settings to pre-fill new event form
+  const { data: nextEventSettings } = trpc.settings.get.useQuery({ key: "nextEvent" });
+  
+  // Parse nextEvent data for pre-filling
+  const nextEventData = React.useMemo(() => {
+    if (nextEventSettings?.value) {
+      try {
+        const parsed = JSON.parse(nextEventSettings.value);
+        return {
+          title: parsed.title || "",
+          date: parsed.date || "",
+          description: parsed.description || "",
+          image: parsed.image || "",
+          chef: parsed.chef || "",
+          menuItems: parsed.menuPreview || [],
+          gallery: [],
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }, [nextEventSettings]);
+
   // Fetch events from API, fallback to static data
   const { data: dbEvents, isLoading: dbLoading, refetch } = trpc.events.list.useQuery();
   
@@ -309,6 +333,7 @@ function EventsManager() {
               <DialogTitle>Crear Nuevo Evento</DialogTitle>
             </DialogHeader>
             <EventForm 
+              initialData={nextEventData}
               onSubmit={(data) => createEvent.mutate(data)} 
               isLoading={createEvent.isPending}
             />
