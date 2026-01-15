@@ -513,6 +513,11 @@ const aiRouter = router({
       menuItems: z.array(z.string()).optional(),
     }))
     .mutation(async ({ input }) => {
+      // Check if LLM API is configured
+      if (!ENV.forgeApiKey) {
+        throw new Error("IA no configurada. Configura BUILT_IN_FORGE_API_KEY en las variables de entorno.");
+      }
+
       const dateObj = new Date(input.date);
       const month = dateObj.getMonth();
       const day = dateObj.getDate();
@@ -585,6 +590,11 @@ Responde SOLO con el título, sin explicaciones ni comillas.`;
       chef: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
+      // Check if LLM API is configured
+      if (!ENV.forgeApiKey) {
+        throw new Error("IA no configurada. Configura BUILT_IN_FORGE_API_KEY en las variables de entorno.");
+      }
+
       const chefText = input.chef ? `preparado por ${input.chef}` : "";
       const menuText = input.menuItems.length > 0
         ? input.menuItems.join(", ")
