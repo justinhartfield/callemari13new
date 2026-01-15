@@ -1347,9 +1347,10 @@ function HomepageManager() {
     image: "",
   });
   const [isGeneratingHofImage, setIsGeneratingHofImage] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   // Fetch data
-  const { data: settings, refetch } = trpc.settings.get.useQuery({ key: "nextEvent" });
+  const { data: settings } = trpc.settings.get.useQuery({ key: "nextEvent" });
   const { data: chefs } = trpc.chefs.list.useQuery();
   const { data: foodItems, refetch: refetchFoodItems } = trpc.foodItems.list.useQuery();
 
@@ -1357,7 +1358,6 @@ function HomepageManager() {
   const updateSetting = trpc.settings.set.useMutation({
     onSuccess: () => {
       toast.success("Página de inicio actualizada correctamente");
-      refetch();
     },
     onError: (error) => {
       toast.error("Error al guardar: " + error.message);
@@ -1414,9 +1414,9 @@ function HomepageManager() {
     }
   });
 
-  // Load saved settings
+  // Load saved settings (only on initial load)
   useEffect(() => {
-    if (settings?.value) {
+    if (settings?.value && !initialLoadDone) {
       try {
         const parsed = JSON.parse(settings.value);
         setNextEventData({
@@ -1430,11 +1430,12 @@ function HomepageManager() {
           description: parsed.description || "",
         });
         setSelectedMenuItems(parsed.menuPreview || []);
+        setInitialLoadDone(true);
       } catch (e) {
         // ignore parse errors
       }
     }
-  }, [settings]);
+  }, [settings, initialLoadDone]);
 
   // Group food items by category
   const groupedFoodItems = useMemo(() => {
