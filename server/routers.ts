@@ -650,21 +650,35 @@ const settingsRouter = router({
   get: publicProcedure
     .input(z.object({ key: z.string() }))
     .query(async ({ input }) => {
-      // Try to fetch from Bunny.net CDN with cache-busting
-      const cdnUrl = ENV.bunnyCdnUrl || "https://cfls.b-cdn.net";
+      // Read directly from Bunny Storage (not CDN) to always get fresh data
+      const storageZone = ENV.bunnyStorageZone;
+      const apiKey = ENV.bunnyStorageApiKey;
+
+      if (!storageZone || !apiKey) {
+        console.error("[settings.get] Bunny.net storage not configured");
+        return null;
+      }
+
+      const fileName = `settings/${input.key}.json`;
+      const storageUrl = `https://storage.bunnycdn.com/${storageZone}/${fileName}`;
+
       try {
-        const response = await fetch(`${cdnUrl}/settings/${input.key}.json?t=${Date.now()}`, {
+        const response = await fetch(storageUrl, {
+          method: "GET",
           headers: {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
+            "AccessKey": apiKey,
+            "Accept": "application/json",
           },
         });
         if (response.ok) {
           const data = await response.json();
+          console.log(`[settings.get] Fetched ${input.key}:`, data);
           return { id: 1, key: input.key, value: JSON.stringify(data), updatedAt: new Date() };
+        } else {
+          console.log(`[settings.get] File not found: ${response.status}`);
         }
       } catch (e) {
-        // File doesn't exist yet, return null
+        console.error("[settings.get] Error fetching:", e);
       }
       return null;
     }),
@@ -678,14 +692,16 @@ const settingsRouter = router({
       // Save to Bunny.net storage
       const storageZone = ENV.bunnyStorageZone;
       const apiKey = ENV.bunnyStorageApiKey;
-      
+
       if (!storageZone || !apiKey) {
         throw new Error("Bunny.net storage not configured");
       }
-      
+
       const fileName = `settings/${input.key}.json`;
       const uploadUrl = `https://storage.bunnycdn.com/${storageZone}/${fileName}`;
-      
+
+      console.log(`[settings.set] Saving ${input.key}:`, input.value.substring(0, 200));
+
       const response = await fetch(uploadUrl, {
         method: "PUT",
         headers: {
@@ -697,24 +713,11 @@ const settingsRouter = router({
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`[settings.set] Failed to save: ${errorText}`);
         throw new Error(`Failed to save settings: ${errorText}`);
       }
 
-      // Purge the CDN cache for this file
-      const cdnUrl = ENV.bunnyCdnUrl || "https://cfls.b-cdn.net";
-      const purgeUrl = `${cdnUrl}/settings/${input.key}.json`;
-      try {
-        await fetch(`https://api.bunny.net/purge?url=${encodeURIComponent(purgeUrl)}`, {
-          method: "POST",
-          headers: {
-            "AccessKey": apiKey,
-          },
-        });
-      } catch (e) {
-        // Purge failed, but save succeeded - continue
-        console.error("CDN purge failed:", e);
-      }
-
+      console.log(`[settings.set] Successfully saved ${input.key}`);
       return { success: true };
     }),
 });
