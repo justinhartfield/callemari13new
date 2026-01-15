@@ -1419,17 +1419,41 @@ function HomepageManager() {
     if (settings?.value && !initialLoadDone) {
       try {
         const parsed = JSON.parse(settings.value);
-        setNextEventData({
-          title: parsed.title || "",
-          date: parsed.date || defaultDateTime.date,
-          time: parsed.time || defaultDateTime.time,
-          chef: parsed.chef || "",
-          image: parsed.image || "",
-          menuImages: parsed.menuImages || [],
-          menuPreview: parsed.menuPreview || [],
-          description: parsed.description || "",
-        });
-        setSelectedMenuItems(parsed.menuPreview || []);
+
+        // Check if saved date has passed - if so, start fresh with next Friday
+        let dateHasPassed = false;
+        if (parsed.date) {
+          const savedDate = new Date(parsed.date + "T" + (parsed.time || "11:00") + ":00");
+          dateHasPassed = savedDate.getTime() <= Date.now();
+        }
+
+        if (dateHasPassed) {
+          // Date has passed - start fresh with next Friday, clear old data
+          setNextEventData({
+            title: "",
+            date: defaultDateTime.date,
+            time: defaultDateTime.time,
+            chef: "",
+            image: "",
+            menuImages: [],
+            menuPreview: [],
+            description: "",
+          });
+          setSelectedMenuItems([]);
+        } else {
+          // Date is in the future - use saved settings
+          setNextEventData({
+            title: parsed.title || "",
+            date: parsed.date || defaultDateTime.date,
+            time: parsed.time || defaultDateTime.time,
+            chef: parsed.chef || "",
+            image: parsed.image || "",
+            menuImages: parsed.menuImages || [],
+            menuPreview: parsed.menuPreview || [],
+            description: parsed.description || "",
+          });
+          setSelectedMenuItems(parsed.menuPreview || []);
+        }
         setInitialLoadDone(true);
       } catch (e) {
         // ignore parse errors
