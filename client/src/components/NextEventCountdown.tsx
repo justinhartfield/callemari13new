@@ -122,21 +122,32 @@ export default function NextEventCountdown() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [useAutoReset, setUseAutoReset] = useState(false);
   
-  // Fetch settings from database
-  const { data: settings } = trpc.settings.get.useQuery({ key: "nextEvent" });
+  // Fetch settings from database - always fetch fresh data
+  const { data: settings } = trpc.settings.get.useQuery(
+    { key: "nextEvent" },
+    {
+      staleTime: 0,
+      refetchOnMount: "always",
+      refetchOnWindowFocus: true,
+    }
+  );
   
   // Parse settings when they load
   useEffect(() => {
+    console.log("[NextEvent] Settings received:", settings);
     if (settings?.value) {
       try {
         const parsed = JSON.parse(settings.value);
+        console.log("[NextEvent] Parsed settings:", parsed);
         if (parsed.title && parsed.date) {
           // Check if the saved event date has passed
           const savedDate = new Date(parsed.date + "T" + (parsed.time || "11:00") + ":00");
           const now = new Date();
           
+          console.log("[NextEvent] Date check:", { savedDate, now, hasPassed: savedDate.getTime() <= now.getTime() });
           if (savedDate.getTime() <= now.getTime()) {
             // Event has passed - use auto-generated next Friday
+            console.log("[NextEvent] Date has passed, using auto-generated");
             setEventData(getAutoNextFriday());
             setUseAutoReset(true);
           } else {
