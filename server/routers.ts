@@ -9,7 +9,6 @@ import { events, foodItems, chefs, siteSettings } from "../drizzle/schema";
 import { seedDatabase } from "./seed";
 import { storagePut } from "./storage";
 import { ENV } from "./_core/env";
-import { invokeLLM } from "./_core/llm";
 
 // Ideogram API configuration
 const IDEOGRAM_API_URL = "https://api.ideogram.ai/v1/ideogram-v3/generate";
@@ -505,6 +504,36 @@ const ideogramRouter = router({
     }),
 });
 
+// OpenAI API helper
+async function callOpenAI(prompt: string): Promise<string> {
+  if (!ENV.openaiApiKey) {
+    throw new Error("IA no configurada. Configura OPENAI_API_KEY en las variables de entorno.");
+  }
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${ENV.openaiApiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 150,
+      temperature: 0.8,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("OpenAI API error:", response.status, errorText);
+    throw new Error(`OpenAI API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content?.trim() || "";
+}
+
 // AI Text Generation Router
 const aiRouter = router({
   suggestTitle: publicProcedure
@@ -513,11 +542,6 @@ const aiRouter = router({
       menuItems: z.array(z.string()).optional(),
     }))
     .mutation(async ({ input }) => {
-      // Check if LLM API is configured
-      if (!ENV.forgeApiKey) {
-        throw new Error("IA no configurada. Configura BUILT_IN_FORGE_API_KEY en las variables de entorno.");
-      }
-
       const dateObj = new Date(input.date);
       const month = dateObj.getMonth();
       const day = dateObj.getDate();
@@ -571,11 +595,7 @@ Ejemplos de títulos anteriores:
 Responde SOLO con el título, sin explicaciones ni comillas.`;
 
       try {
-        const result = await invokeLLM({
-          messages: [{ role: "user", content: prompt }],
-        });
-
-        const title = result.choices[0]?.message?.content?.toString().trim() || "";
+        const title = await callOpenAI(prompt);
         return { title };
       } catch (error) {
         console.error("AI title generation error:", error);
@@ -590,11 +610,6 @@ Responde SOLO con el título, sin explicaciones ni comillas.`;
       chef: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      // Check if LLM API is configured
-      if (!ENV.forgeApiKey) {
-        throw new Error("IA no configurada. Configura BUILT_IN_FORGE_API_KEY en las variables de entorno.");
-      }
-
       const chefText = input.chef ? `preparado por ${input.chef}` : "";
       const menuText = input.menuItems.length > 0
         ? input.menuItems.join(", ")
@@ -621,11 +636,7 @@ Ejemplos:
 Responde SOLO con la descripción, sin explicaciones ni comillas.`;
 
       try {
-        const result = await invokeLLM({
-          messages: [{ role: "user", content: prompt }],
-        });
-
-        const description = result.choices[0]?.message?.content?.toString().trim() || "";
+        const description = await callOpenAI(prompt);
         return { description };
       } catch (error) {
         console.error("AI description generation error:", error);
