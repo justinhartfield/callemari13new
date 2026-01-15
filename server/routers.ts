@@ -650,10 +650,15 @@ const settingsRouter = router({
   get: publicProcedure
     .input(z.object({ key: z.string() }))
     .query(async ({ input }) => {
-      // Try to fetch from Bunny.net CDN
+      // Try to fetch from Bunny.net CDN with cache-busting
       const cdnUrl = ENV.bunnyCdnUrl || "https://cfls.b-cdn.net";
       try {
-        const response = await fetch(`${cdnUrl}/settings/${input.key}.json?t=${Date.now()}`);
+        const response = await fetch(`${cdnUrl}/settings/${input.key}.json?t=${Date.now()}`, {
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           return { id: 1, key: input.key, value: JSON.stringify(data), updatedAt: new Date() };
@@ -689,12 +694,27 @@ const settingsRouter = router({
         },
         body: input.value,
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to save settings: ${errorText}`);
       }
-      
+
+      // Purge the CDN cache for this file
+      const cdnUrl = ENV.bunnyCdnUrl || "https://cfls.b-cdn.net";
+      const purgeUrl = `${cdnUrl}/settings/${input.key}.json`;
+      try {
+        await fetch(`https://api.bunny.net/purge?url=${encodeURIComponent(purgeUrl)}`, {
+          method: "POST",
+          headers: {
+            "AccessKey": apiKey,
+          },
+        });
+      } catch (e) {
+        // Purge failed, but save succeeded - continue
+        console.error("CDN purge failed:", e);
+      }
+
       return { success: true };
     }),
 });
