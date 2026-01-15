@@ -11,14 +11,14 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
-import { 
-  Calendar, 
-  UtensilsCrossed, 
-  Users, 
-  Settings, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Calendar,
+  UtensilsCrossed,
+  Users,
+  Settings,
+  Plus,
+  Edit,
+  Trash2,
   ArrowLeft,
   Lock,
   Image,
@@ -26,11 +26,13 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Search,
   Home,
   Clock,
   Sparkles,
-  Loader2
+  Loader2,
+  Wand2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +42,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { ImageUpload, GalleryUpload } from "@/components/ImageUpload";
@@ -48,6 +53,33 @@ import { events as staticEvents } from "@/data/events";
 import { allFoodItems } from "@/data/allFoodItems";
 
 const ADMIN_CODE = "420";
+
+// Utility to get next Friday at 11AM
+function getNextFriday11AM(): { date: string; time: string } {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  // Calculate days until next Friday (0=Sun, 5=Fri)
+  let daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+  // If today is Friday, get next Friday
+  if (daysUntilFriday === 0) daysUntilFriday = 7;
+  const nextFriday = new Date(now);
+  nextFriday.setDate(now.getDate() + daysUntilFriday);
+  return {
+    date: nextFriday.toISOString().split('T')[0],
+    time: "11:00"
+  };
+}
+
+// Food item categories for grouping
+const FOOD_CATEGORIES = [
+  "Bocadillos",
+  "Tortillas",
+  "Hamburguesas",
+  "Bandejas",
+  "Pescados",
+  "Carnes",
+  "Otros"
+] as const;
 
 export default function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -1286,21 +1318,42 @@ interface MenuImage {
 }
 
 function HomepageManager() {
+  // Get default next Friday at 11AM
+  const defaultDateTime = getNextFriday11AM();
+
   const [nextEventData, setNextEventData] = useState({
     title: "",
-    date: "",
-    time: "12:00",
+    date: defaultDateTime.date,
+    time: defaultDateTime.time,
     chef: "",
     image: "",
     menuImages: [] as MenuImage[],
     menuPreview: [] as string[],
     description: "",
   });
-  const [menuInput, setMenuInput] = useState("");
+  const [selectedMenuItems, setSelectedMenuItems] = useState<string[]>([]);
+  const [menuSearch, setMenuSearch] = useState("");
   const [useUrlInput, setUseUrlInput] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(FOOD_CATEGORIES.map(c => c));
+  const [showNewHofDialog, setShowNewHofDialog] = useState(false);
+  const [newHofData, setNewHofData] = useState({
+    name: "",
+    category: "Bocadillos",
+    chef: "",
+    description: "",
+    image: "",
+  });
+  const [isGeneratingHofImage, setIsGeneratingHofImage] = useState(false);
 
+  // Fetch data
   const { data: settings, refetch } = trpc.settings.get.useQuery({ key: "nextEvent" });
+  const { data: chefs } = trpc.chefs.list.useQuery();
+  const { data: foodItems, refetch: refetchFoodItems } = trpc.foodItems.list.useQuery();
 
+  // Mutations
   const updateSetting = trpc.settings.set.useMutation({
     onSuccess: () => {
       toast.success("Página de inicio actualizada correctamente");
@@ -1311,35 +1364,189 @@ function HomepageManager() {
     }
   });
 
+  const suggestTitleMutation = trpc.ai.suggestTitle.useMutation({
+    onSuccess: (data) => {
+      setNextEventData(prev => ({ ...prev, title: data.title }));
+      toast.success("Título generado con IA");
+      setIsGeneratingTitle(false);
+    },
+    onError: (error) => {
+      toast.error("Error al generar título: " + error.message);
+      setIsGeneratingTitle(false);
+    }
+  });
+
+  const generateDescriptionMutation = trpc.ai.generateDescription.useMutation({
+    onSuccess: (data) => {
+      setNextEventData(prev => ({ ...prev, description: data.description }));
+      toast.success("Descripción generada con IA");
+      setIsGeneratingDescription(false);
+    },
+    onError: (error) => {
+      toast.error("Error al generar descripción: " + error.message);
+      setIsGeneratingDescription(false);
+    }
+  });
+
+  const createFoodItemMutation = trpc.foodItems.create.useMutation({
+    onSuccess: () => {
+      toast.success("Plato añadido al Hall of Fame");
+      refetchFoodItems();
+      setShowNewHofDialog(false);
+      setNewHofData({ name: "", category: "Bocadillos", chef: "", description: "", image: "" });
+    },
+    onError: (error) => {
+      toast.error("Error al crear plato: " + error.message);
+    }
+  });
+
+  const generateHofImageMutation = trpc.ideogram.generateMultiple.useMutation({
+    onSuccess: (data) => {
+      if (data.images.length > 0) {
+        setNewHofData(prev => ({ ...prev, image: data.images[0].imageUrl }));
+        toast.success("Imagen generada con IA");
+      }
+      setIsGeneratingHofImage(false);
+    },
+    onError: (error) => {
+      toast.error("Error al generar imagen: " + error.message);
+      setIsGeneratingHofImage(false);
+    }
+  });
+
+  // Load saved settings
   useEffect(() => {
     if (settings?.value) {
       try {
         const parsed = JSON.parse(settings.value);
         setNextEventData({
           title: parsed.title || "",
-          date: parsed.date || "",
-          time: parsed.time || "12:00",
+          date: parsed.date || defaultDateTime.date,
+          time: parsed.time || defaultDateTime.time,
           chef: parsed.chef || "",
           image: parsed.image || "",
           menuImages: parsed.menuImages || [],
           menuPreview: parsed.menuPreview || [],
           description: parsed.description || "",
         });
-        setMenuInput((parsed.menuPreview || []).join("\n"));
+        setSelectedMenuItems(parsed.menuPreview || []);
       } catch (e) {
         // ignore parse errors
       }
     }
   }, [settings]);
 
+  // Group food items by category
+  const groupedFoodItems = useMemo(() => {
+    if (!foodItems) return {};
+    const grouped: Record<string, typeof foodItems> = {};
+    FOOD_CATEGORIES.forEach(cat => {
+      grouped[cat] = [];
+    });
+    foodItems.forEach(item => {
+      const category = item.category || "Otros";
+      if (!grouped[category]) grouped[category] = [];
+      grouped[category].push(item);
+    });
+    return grouped;
+  }, [foodItems]);
+
+  // Filter food items by search
+  const filteredGroupedItems = useMemo(() => {
+    if (!menuSearch.trim()) return groupedFoodItems;
+    const search = menuSearch.toLowerCase();
+    const filtered: Record<string, typeof foodItems> = {};
+    Object.entries(groupedFoodItems).forEach(([cat, items]) => {
+      const matchingItems = items?.filter(item =>
+        item.name.toLowerCase().includes(search)
+      ) || [];
+      if (matchingItems.length > 0) {
+        filtered[cat] = matchingItems;
+      }
+    });
+    return filtered;
+  }, [groupedFoodItems, menuSearch]);
+
   const handleSave = () => {
-    const menuItems = menuInput.split("\n").filter(item => item.trim());
     updateSetting.mutate({
       key: "nextEvent",
       value: JSON.stringify({
         ...nextEventData,
-        menuPreview: menuItems,
+        menuPreview: selectedMenuItems,
       }),
+    });
+  };
+
+  const handleSuggestTitle = () => {
+    if (!nextEventData.date) {
+      toast.error("Por favor, selecciona una fecha primero");
+      return;
+    }
+    setIsGeneratingTitle(true);
+    suggestTitleMutation.mutate({
+      date: nextEventData.date,
+      menuItems: selectedMenuItems,
+    });
+  };
+
+  const handleGenerateDescription = () => {
+    if (!nextEventData.title) {
+      toast.error("Por favor, introduce un título primero");
+      return;
+    }
+    setIsGeneratingDescription(true);
+    generateDescriptionMutation.mutate({
+      title: nextEventData.title,
+      menuItems: selectedMenuItems,
+      chef: nextEventData.chef || undefined,
+    });
+  };
+
+  const toggleMenuItem = (itemName: string) => {
+    setSelectedMenuItems(prev => {
+      if (prev.includes(itemName)) {
+        return prev.filter(n => n !== itemName);
+      }
+      if (prev.length >= 4) {
+        toast.error("Máximo 4 platos en el menú");
+        return prev;
+      }
+      return [...prev, itemName];
+    });
+  };
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const handleGenerateHofImage = () => {
+    if (!newHofData.name) {
+      toast.error("Por favor, introduce el nombre del plato");
+      return;
+    }
+    setIsGeneratingHofImage(true);
+    generateHofImageMutation.mutate({
+      title: "Hall of Fame",
+      menuItems: [newHofData.name],
+      chef: newHofData.chef || undefined,
+    });
+  };
+
+  const handleCreateHof = () => {
+    if (!newHofData.name) {
+      toast.error("Por favor, introduce el nombre del plato");
+      return;
+    }
+    createFoodItemMutation.mutate({
+      name: newHofData.name,
+      category: newHofData.category,
+      chef: newHofData.chef || undefined,
+      description: newHofData.description || undefined,
+      image: newHofData.image || undefined,
     });
   };
 
@@ -1362,8 +1569,26 @@ function HomepageManager() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Column - Event Details */}
             <div className="space-y-4">
+              {/* Title with AI button */}
               <div className="space-y-2">
-                <Label htmlFor="eventTitle" className="font-bold">Título del Evento *</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="eventTitle" className="font-bold">Título del Evento *</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSuggestTitle}
+                    disabled={isGeneratingTitle}
+                    className="h-7 px-2 text-xs border-ink hover:bg-orange hover:text-cream"
+                  >
+                    {isGeneratingTitle ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Sparkles size={14} />
+                    )}
+                    <span className="ml-1">IA</span>
+                  </Button>
+                </div>
                 <Input
                   id="eventTitle"
                   value={nextEventData.title}
@@ -1373,42 +1598,90 @@ function HomepageManager() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="eventDate" className="font-bold">Fecha *</Label>
-                  <Input
-                    id="eventDate"
-                    type="date"
-                    value={nextEventData.date}
-                    onChange={(e) => setNextEventData({ ...nextEventData, date: e.target.value })}
-                    className="border-2 border-ink"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="eventTime" className="font-bold">Hora</Label>
-                  <Input
-                    id="eventTime"
-                    type="time"
-                    value={nextEventData.time}
-                    onChange={(e) => setNextEventData({ ...nextEventData, time: e.target.value })}
-                    className="border-2 border-ink"
-                  />
-                </div>
-              </div>
+              {/* Advanced Options (Date/Time) - Collapsible */}
+              <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full justify-between p-2 h-auto text-sm text-ink/70 hover:text-ink hover:bg-ink/5"
+                  >
+                    <span className="flex items-center gap-2">
+                      {showAdvanced ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      Opciones Avanzadas
+                    </span>
+                    <span className="text-xs text-ink/50">
+                      {nextEventData.date && new Date(nextEventData.date).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                      {" "}{nextEventData.time}
+                    </span>
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-2">
+                  <div className="grid grid-cols-2 gap-4 p-3 bg-ink/5 rounded-lg border border-ink/20">
+                    <div className="space-y-2">
+                      <Label htmlFor="eventDate" className="font-bold text-sm">Fecha</Label>
+                      <Input
+                        id="eventDate"
+                        type="date"
+                        value={nextEventData.date}
+                        onChange={(e) => setNextEventData({ ...nextEventData, date: e.target.value })}
+                        className="border-2 border-ink"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="eventTime" className="font-bold text-sm">Hora</Label>
+                      <Input
+                        id="eventTime"
+                        type="time"
+                        value={nextEventData.time}
+                        onChange={(e) => setNextEventData({ ...nextEventData, time: e.target.value })}
+                        className="border-2 border-ink"
+                      />
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
+              {/* Chef Dropdown */}
               <div className="space-y-2">
                 <Label htmlFor="eventChef" className="font-bold">Chef del Día</Label>
-                <Input
-                  id="eventChef"
+                <Select
                   value={nextEventData.chef}
-                  onChange={(e) => setNextEventData({ ...nextEventData, chef: e.target.value })}
-                  placeholder="ej: Justin"
-                  className="border-2 border-ink"
-                />
+                  onValueChange={(value) => setNextEventData({ ...nextEventData, chef: value })}
+                >
+                  <SelectTrigger className="border-2 border-ink">
+                    <SelectValue placeholder="Seleccionar chef..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {chefs?.map((chef) => (
+                      <SelectItem key={chef.id} value={chef.name}>
+                        {chef.name} {chef.nickname && `"${chef.nickname}"`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
+              {/* Description with AI button */}
               <div className="space-y-2">
-                <Label htmlFor="eventDescription" className="font-bold">Descripción</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="eventDescription" className="font-bold">Descripción</Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleGenerateDescription}
+                    disabled={isGeneratingDescription || !nextEventData.title}
+                    className="h-7 px-2 text-xs border-ink hover:bg-orange hover:text-cream"
+                  >
+                    {isGeneratingDescription ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Wand2 size={14} />
+                    )}
+                    <span className="ml-1">IA</span>
+                  </Button>
+                </div>
                 <Textarea
                   id="eventDescription"
                   value={nextEventData.description}
@@ -1452,25 +1725,222 @@ function HomepageManager() {
                     placeholder="Subir imagen del próximo almorzar"
                   />
                 )}
-                
               </div>
 
+              {/* Menu Items Selector */}
               <div className="space-y-2">
-                <Label htmlFor="menuPreview" className="font-bold">Menú Previsto (uno por línea, máx. 4)</Label>
-                <Textarea
-                  id="menuPreview"
-                  value={menuInput}
-                  onChange={(e) => setMenuInput(e.target.value)}
-                  placeholder="Bocadillo de jamón&#10;Tortilla de patatas&#10;Ensalada mixta&#10;Croquetas caseras"
-                  rows={5}
-                  className="border-2 border-ink"
-                />
+                <Label className="font-bold">Menú Previsto (máx. 4)</Label>
+
+                {/* Selected items as tags */}
+                {selectedMenuItems.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {selectedMenuItems.map((item, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 text-xs bg-orange text-cream px-2 py-1 rounded-full"
+                      >
+                        {item}
+                        <button
+                          type="button"
+                          onClick={() => toggleMenuItem(item)}
+                          className="hover:bg-cream/20 rounded-full p-0.5"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Search input */}
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-ink/40" size={16} />
+                  <Input
+                    value={menuSearch}
+                    onChange={(e) => setMenuSearch(e.target.value)}
+                    placeholder="Buscar platos..."
+                    className="pl-8 border-2 border-ink"
+                  />
+                </div>
+
+                {/* Grouped checkboxes */}
+                <ScrollArea className="h-48 border-2 border-ink rounded-lg">
+                  <div className="p-2 space-y-1">
+                    {Object.entries(filteredGroupedItems).map(([category, items]) => (
+                      items && items.length > 0 && (
+                        <Collapsible
+                          key={category}
+                          open={expandedCategories.includes(category)}
+                          onOpenChange={() => toggleCategory(category)}
+                        >
+                          <CollapsibleTrigger className="flex items-center gap-2 w-full p-1 hover:bg-ink/5 rounded text-sm font-semibold text-ink">
+                            {expandedCategories.includes(category) ? (
+                              <ChevronDown size={14} />
+                            ) : (
+                              <ChevronRight size={14} />
+                            )}
+                            {category} ({items.length})
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pl-4 space-y-1">
+                            {items.map((item) => (
+                              <label
+                                key={item.id}
+                                className="flex items-center gap-2 p-1 hover:bg-ink/5 rounded cursor-pointer"
+                              >
+                                <Checkbox
+                                  checked={selectedMenuItems.includes(item.name)}
+                                  onCheckedChange={() => toggleMenuItem(item.name)}
+                                  disabled={!selectedMenuItems.includes(item.name) && selectedMenuItems.length >= 4}
+                                />
+                                <span className="text-sm truncate">{item.name}</span>
+                              </label>
+                            ))}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      )
+                    ))}
+                  </div>
+                </ScrollArea>
+
+                {/* Add new Hall of Fame button */}
+                <Dialog open={showNewHofDialog} onOpenChange={setShowNewHofDialog}>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-2 border-dashed border-ink/50 text-ink/70 hover:border-ink hover:text-ink"
+                    >
+                      <Plus size={16} className="mr-1" />
+                      Añadir nuevo plato al Hall of Fame
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="border-4 border-ink">
+                    <DialogHeader>
+                      <DialogTitle>Nuevo Plato para Hall of Fame</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="hofName">Nombre del Plato *</Label>
+                        <Input
+                          id="hofName"
+                          value={newHofData.name}
+                          onChange={(e) => setNewHofData({ ...newHofData, name: e.target.value })}
+                          placeholder="ej: Bocadillo de calamares"
+                          className="border-2 border-ink"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="hofCategory">Categoría</Label>
+                        <Select
+                          value={newHofData.category}
+                          onValueChange={(value) => setNewHofData({ ...newHofData, category: value })}
+                        >
+                          <SelectTrigger className="border-2 border-ink">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {FOOD_CATEGORIES.map((cat) => (
+                              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="hofChef">Chef Creador</Label>
+                        <Select
+                          value={newHofData.chef}
+                          onValueChange={(value) => setNewHofData({ ...newHofData, chef: value })}
+                        >
+                          <SelectTrigger className="border-2 border-ink">
+                            <SelectValue placeholder="Seleccionar chef..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {chefs?.map((chef) => (
+                              <SelectItem key={chef.id} value={chef.name}>
+                                {chef.name} {chef.nickname && `"${chef.nickname}"`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="hofDescription">Descripción</Label>
+                        <Textarea
+                          id="hofDescription"
+                          value={newHofData.description}
+                          onChange={(e) => setNewHofData({ ...newHofData, description: e.target.value })}
+                          placeholder="Descripción del plato..."
+                          rows={2}
+                          className="border-2 border-ink"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label>Imagen</Label>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={handleGenerateHofImage}
+                            disabled={isGeneratingHofImage || !newHofData.name}
+                            className="h-7 px-2 text-xs border-ink"
+                          >
+                            {isGeneratingHofImage ? (
+                              <Loader2 size={14} className="animate-spin mr-1" />
+                            ) : (
+                              <Sparkles size={14} className="mr-1" />
+                            )}
+                            Generar con IA
+                          </Button>
+                        </div>
+                        {newHofData.image ? (
+                          <div className="relative">
+                            <img
+                              src={newHofData.image}
+                              alt="Preview"
+                              className="w-full h-32 object-cover rounded border-2 border-ink"
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => setNewHofData({ ...newHofData, image: "" })}
+                              className="absolute top-1 right-1 h-6 w-6 p-0"
+                            >
+                              <X size={14} />
+                            </Button>
+                          </div>
+                        ) : (
+                          <ImageUpload
+                            value=""
+                            onChange={(url) => setNewHofData({ ...newHofData, image: url })}
+                            placeholder="Subir imagen del plato"
+                          />
+                        )}
+                      </div>
+                      <Button
+                        onClick={handleCreateHof}
+                        disabled={createFoodItemMutation.isPending || !newHofData.name}
+                        className="w-full bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink"
+                      >
+                        {createFoodItemMutation.isPending ? (
+                          <Loader2 size={18} className="animate-spin mr-2" />
+                        ) : (
+                          <Plus size={18} className="mr-2" />
+                        )}
+                        Añadir al Hall of Fame
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
                 <p className="text-xs text-ink/60">Estos platos aparecerán en la sección de countdown con imágenes generadas por IA</p>
-                
-                {/* AI Image Generation Button - Now generates one image per menu item */}
-                <AIImageGenerator 
+
+                {/* AI Image Generation Button */}
+                <AIImageGenerator
                   title={nextEventData.title}
-                  menuItems={menuInput.split("\n").filter(m => m.trim())}
+                  menuItems={selectedMenuItems}
                   chef={nextEventData.chef}
                   existingImages={nextEventData.menuImages}
                   onImagesGenerated={(images) => setNextEventData({ ...nextEventData, menuImages: images })}
@@ -1492,8 +1962,9 @@ function HomepageManager() {
                       {nextEventData.time && " a las " + nextEventData.time}
                     </p>
                     {nextEventData.chef && <p className="text-cream/70">Chef: {nextEventData.chef}</p>}
+                    {nextEventData.description && <p className="text-cream/80 text-sm mt-2">{nextEventData.description}</p>}
                   </div>
-                  
+
                   {/* Menu Images Grid */}
                   {nextEventData.menuImages.length > 0 && (
                     <div>
@@ -1501,8 +1972,8 @@ function HomepageManager() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                         {nextEventData.menuImages.map((img, i) => (
                           <div key={i} className="relative">
-                            <img 
-                              src={img.imageUrl} 
+                            <img
+                              src={img.imageUrl}
                               alt={img.menuItem}
                               className="w-full aspect-square object-cover rounded border-2 border-orange"
                             />
@@ -1512,13 +1983,13 @@ function HomepageManager() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Fallback to text menu if no images */}
-                  {nextEventData.menuImages.length === 0 && menuInput && (
+                  {nextEventData.menuImages.length === 0 && selectedMenuItems.length > 0 && (
                     <div>
                       <p className="text-xs text-cream/50 mb-1">Menú previsto:</p>
                       <div className="flex flex-wrap gap-1">
-                        {menuInput.split("\n").filter(m => m.trim()).slice(0, 4).map((item, i) => (
+                        {selectedMenuItems.slice(0, 4).map((item, i) => (
                           <span key={i} className="text-xs bg-orange/20 text-orange px-2 py-0.5 rounded">{item}</span>
                         ))}
                       </div>
@@ -1530,7 +2001,7 @@ function HomepageManager() {
           )}
 
           <div className="flex justify-end">
-            <Button 
+            <Button
               onClick={handleSave}
               disabled={updateSetting.isPending}
               className="bg-orange hover:bg-orange/90 text-cream font-bold border-2 border-ink shadow-brutal"
@@ -1552,9 +2023,9 @@ function HomepageManager() {
         </CardHeader>
         <CardContent className="text-ink/70 text-sm space-y-2">
           <p>• El countdown aparecerá automáticamente en la página de inicio cuando configures un evento futuro.</p>
-          <p>• La imagen de vista previa se mostrará junto al countdown para dar un adelanto del próximo almorzar.</p>
-          <p>• El menú previsto ayuda a los miembros a saber qué esperar del próximo evento.</p>
-          <p>• Una vez pasada la fecha, el countdown desaparecerá automáticamente.</p>
+          <p>• La fecha se configura automáticamente para el próximo viernes a las 11:00. Usa "Opciones Avanzadas" para cambiarla.</p>
+          <p>• Usa los botones de IA para generar títulos creativos y descripciones apetitosas.</p>
+          <p>• Selecciona platos del Hall of Fame o añade nuevos directamente desde aquí.</p>
         </CardContent>
       </Card>
     </div>

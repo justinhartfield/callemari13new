@@ -9,6 +9,7 @@ import { events, foodItems, chefs, siteSettings } from "../drizzle/schema";
 import { seedDatabase } from "./seed";
 import { storagePut } from "./storage";
 import { ENV } from "./_core/env";
+import { invokeLLM } from "./_core/llm";
 
 // Ideogram API configuration
 const IDEOGRAM_API_URL = "https://api.ideogram.ai/v1/ideogram-v3/generate";
@@ -504,6 +505,125 @@ const ideogramRouter = router({
     }),
 });
 
+// AI Text Generation Router
+const aiRouter = router({
+  suggestTitle: publicProcedure
+    .input(z.object({
+      date: z.string(),
+      menuItems: z.array(z.string()).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const dateObj = new Date(input.date);
+      const month = dateObj.getMonth();
+      const day = dateObj.getDate();
+
+      // Seasonal and holiday context for Spanish Granada
+      const seasonContext: Record<number, string> = {
+        0: "invierno, ambiente acogedor, comida reconfortante, Reyes Magos (6 enero)",
+        1: "invierno tardío, carnaval, preparando primavera",
+        2: "inicio primavera, Semana Santa se acerca, flores empiezan",
+        3: "primavera, Semana Santa, Feria del Corpus",
+        4: "primavera tardía, días más largos, terrazas",
+        5: "inicio verano, San Juan (24 junio), calor",
+        6: "verano pleno, vacaciones, tapas al fresco",
+        7: "verano, agosto caluroso, Virgen de las Angustias",
+        8: "fin verano, vuelta rutinas, vendimia",
+        9: "otoño, setas, castañas, Halloween",
+        10: "otoño tardío, preparando Navidad",
+        11: "Navidad, fin de año, celebraciones, comidas festivas",
+      };
+
+      // Check for specific Spanish holidays
+      let holidayContext = "";
+      if (month === 0 && day === 6) holidayContext = "¡Día de Reyes! ";
+      else if (month === 11 && day >= 24) holidayContext = "¡Navidad! ";
+      else if (month === 11 && day === 31) holidayContext = "¡Nochevieja! ";
+      else if (month === 0 && day === 1) holidayContext = "¡Año Nuevo! ";
+
+      const menuContext = input.menuItems?.length
+        ? `El menú incluye: ${input.menuItems.join(", ")}.`
+        : "";
+
+      const prompt = `Eres el organizador de "Almorzar" - un club gastronómico de Granada, España que se reúne los viernes para almorzar juntos.
+
+Genera UN título corto y creativo para el próximo evento del ${dateObj.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}.
+
+Contexto estacional: ${seasonContext[month]}
+${holidayContext}${menuContext}
+
+El título debe:
+- Ser breve (3-6 palabras máximo)
+- Incluir la fecha en formato "D/M" al principio (ej: "17/1 ")
+- Ser ingenioso o hacer referencia a la temporada/comida
+- Estar en español
+
+Ejemplos de títulos anteriores:
+- "2/1 Arranca el año nuevo con estilo"
+- "19/12 Lo final del año!"
+- "12/12 Pre-navideño"
+- "5/12 Bocadillos de invierno"
+
+Responde SOLO con el título, sin explicaciones ni comillas.`;
+
+      try {
+        const result = await invokeLLM({
+          messages: [{ role: "user", content: prompt }],
+        });
+
+        const title = result.choices[0]?.message?.content?.toString().trim() || "";
+        return { title };
+      } catch (error) {
+        console.error("AI title generation error:", error);
+        throw new Error("Error al generar título con IA");
+      }
+    }),
+
+  generateDescription: publicProcedure
+    .input(z.object({
+      title: z.string(),
+      menuItems: z.array(z.string()),
+      chef: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const chefText = input.chef ? `preparado por ${input.chef}` : "";
+      const menuText = input.menuItems.length > 0
+        ? input.menuItems.join(", ")
+        : "delicias sorpresa";
+
+      const prompt = `Eres el organizador de "Almorzar" - un club gastronómico de Granada, España.
+
+Genera una descripción breve y apetitosa para el evento "${input.title}".
+
+Menú previsto: ${menuText}
+${chefText ? `Chef: ${chefText}` : ""}
+
+La descripción debe:
+- Ser 1-2 frases cortas (máximo 150 caracteres)
+- Crear anticipación y apetito
+- Mencionar algún plato destacado si hay menú
+- Ser informal y amigable
+- Estar en español
+
+Ejemplos:
+- "¡Bocadillos de autor y buena compañía! Este viernes nos espera una tortilla de campeonato."
+- "Arrancamos el año con sabores que reconfortan. No te pierdas los torreznos de Fede."
+
+Responde SOLO con la descripción, sin explicaciones ni comillas.`;
+
+      try {
+        const result = await invokeLLM({
+          messages: [{ role: "user", content: prompt }],
+        });
+
+        const description = result.choices[0]?.message?.content?.toString().trim() || "";
+        return { description };
+      } catch (error) {
+        console.error("AI description generation error:", error);
+        throw new Error("Error al generar descripción con IA");
+      }
+    }),
+});
+
 // Settings Router - Uses Bunny.net storage instead of database
 const settingsRouter = router({
   get: publicProcedure
@@ -586,6 +706,7 @@ export const appRouter = router({
   settings: settingsRouter,
   upload: uploadRouter,
   ideogram: ideogramRouter,
+  ai: aiRouter,
 });
 
 export type AppRouter = typeof appRouter;
